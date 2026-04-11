@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国产业带产品分布与供应商看板</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: #0f1923;
+            color: #e0e6ed;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0a1628 0%, #1a2a4a 100%);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #1e90ff33;
+        }
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(90deg, #4fc3f7, #1e90ff, #7c4dff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 4px;
+        }
+        .header .time {
+            font-size: 14px;
+            color: #8899aa;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            gap: 20px;
+            padding: 20px 40px;
+            background: #0a1628;
+        }
+        .stat-card {
+            flex: 1;
+            background: linear-gradient(135deg, #1a2744 0%, #0f1d33 100%);
+            border: 1px solid #1e90ff33;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #1e90ff, #7c4dff);
+        }
+        .stat-card .label { font-size: 13px; color: #8899aa; margin-bottom: 8px; }
+        .stat-card .value { font-size: 32px; font-weight: 700; color: #4fc3f7; }
+        .stat-card .sub { font-size: 12px; color: #66bb6a; margin-top: 4px; }
+
+        /* Main Layout */
+        .main { display: flex; gap: 20px; padding: 20px 40px; }
+        .left-panel { flex: 1.2; display: flex; flex-direction: column; gap: 20px; }
+        .right-panel { flex: 1.8; display: flex; flex-direction: column; gap: 20px; }
+
+        /* Panel */
+        .panel {
+            background: linear-gradient(135deg, #1a2744 0%, #0f1d33 100%);
+            border: 1px solid #1e90ff22;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .panel-title {
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #4fc3f7;
+            border-bottom: 1px solid #1e90ff22;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .panel-title .dot {
+            width: 8px; height: 8px;
+            background: #1e90ff;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #1e90ff88;
+        }
+        .panel-body { padding: 16px 20px; }
+
+        /* Map Area */
+        .map-container {
+            position: relative;
+            width: 100%;
+            height: 520px;
+            background: radial-gradient(ellipse at center, #0f2038 0%, #0a1628 70%);
+            overflow: hidden;
+        }
+        .map-svg { width: 100%; height: 100%; }
+        .region-dot {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .region-dot:hover { filter: brightness(1.5); }
+        .pulse-ring {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0% { r: 6; opacity: 0.8; }
+            50% { r: 14; opacity: 0.2; }
+            100% { r: 6; opacity: 0.8; }
+        }
+        .region-label {
+            font-size: 10px;
+            fill: #b0bec5;
+            pointer-events: none;
+        }
+
+        /* Industry Belt List */
+        .belt-list { max-height: 440px; overflow-y: auto; }
+        .belt-list::-webkit-scrollbar { width: 4px; }
+        .belt-list::-webkit-scrollbar-thumb { background: #1e90ff44; border-radius: 2px; }
+        .belt-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid #ffffff08;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-radius: 8px;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        .belt-item:hover { background: #1e90ff11; }
+        .belt-item.active { background: #1e90ff22; border-left: 3px solid #1e90ff; }
+        .belt-icon {
+            width: 36px; height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .belt-info { flex: 1; }
+        .belt-name { font-size: 14px; font-weight: 600; color: #e0e6ed; }
+        .belt-region { font-size: 11px; color: #8899aa; margin-top: 2px; }
+        .belt-count {
+            font-size: 12px;
+            color: #4fc3f7;
+            background: #1e90ff15;
+            padding: 4px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
+        /* Detail Panel */
+        .detail-panel { flex: 1; }
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .detail-header h3 { font-size: 18px; color: #fff; }
+        .detail-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+        .tag {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            border: 1px solid;
+        }
+        .tag-hot { color: #ef5350; border-color: #ef535044; background: #ef535011; }
+        .tag-export { color: #66bb6a; border-color: #66bb6a44; background: #66bb6a11; }
+        .tag-scale { color: #ffa726; border-color: #ffa72644; background: #ffa72611; }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .product-card {
+            background: #0a162844;
+            border: 1px solid #1e90ff15;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .product-card:hover {
+            border-color: #1e90ff55;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px #1e90ff15;
+        }
+        .product-emoji { font-size: 28px; margin-bottom: 8px; }
+        .product-name { font-size: 13px; color: #e0e6ed; font-weight: 500; }
+        .product-share {
+            font-size: 11px;
+            color: #8899aa;
+            margin-top: 4px;
+        }
+        .product-bar {
+            height: 3px;
+            background: #1e90ff22;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .product-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e90ff, #7c4dff);
+            border-radius: 2px;
+            transition: width 0.5s;
+        }
+
+        /* Supplier Table */
+        .supplier-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+        .supplier-table th {
+            font-size: 12px;
+            color: #8899aa;
+            text-align: left;
+            padding: 8px 12px;
+            font-weight: 500;
+        }
+        .supplier-table td {
+            font-size: 13px;
+            padding: 12px;
+            background: #0a162866;
+            color: #e0e6ed;
+        }
+        .supplier-table tr td:first-child { border-radius: 8px 0 0 8px; }
+        .supplier-table tr td:last-child { border-radius: 0 8px 8px 0; }
+        .supplier-name { font-weight: 600; color: #fff; }
+        .supplier-type {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .type-factory { background: #1e90ff22; color: #4fc3f7; }
+        .type-trader { background: #ffa72622; color: #ffa726; }
+        .type-brand { background: #66bb6a22; color: #66bb6a; }
+        .rating-stars { color: #ffd54f; font-size: 12px; letter-spacing: 1px; }
+        .capacity { color: #4fc3f7; font-weight: 500; }
+
+        /* Bottom Section */
+        .bottom-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 0 40px 30px;
+        }
+
+        /* Chart Bars */
+        .chart-bar-group { display: flex; flex-direction: column; gap: 10px; }
+        .chart-bar-item { display: flex; align-items: center; gap: 10px; }
+        .chart-bar-label { font-size: 12px; color: #8899aa; width: 80px; text-align: right; flex-shrink: 0; }
+        .chart-bar-track {
+            flex: 1; height: 22px; background: #0a1628;
+            border-radius: 4px; overflow: hidden; position: relative;
+        }
+        .chart-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.8s ease;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            font-size: 11px;
+            color: #fff;
+            font-weight: 500;
+        }
+        .bar-blue { background: linear-gradient(90deg, #1e90ff, #4fc3f7); }
+        .bar-purple { background: linear-gradient(90deg, #7c4dff, #b388ff); }
+        .bar-green { background: linear-gradient(90deg, #2e7d32, #66bb6a); }
+        .bar-orange { background: linear-gradient(90deg, #e65100, #ffa726); }
+
+        /* Pie Chart */
+        .pie-container { display: flex; align-items: center; gap: 20px; }
+        .pie-svg { width: 140px; height: 140px; }
+        .pie-legend { display: flex; flex-direction: column; gap: 8px; }
+        .pie-legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+        .pie-legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+        /* Trend List */
+        .trend-list { display: flex; flex-direction: column; gap: 8px; }
+        .trend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: #0a162844;
+            border-radius: 6px;
+        }
+        .trend-rank {
+            width: 22px; height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+        .rank-1 { background: #ef535033; color: #ef5350; }
+        .rank-2 { background: #ffa72633; color: #ffa726; }
+        .rank-3 { background: #ffd54f33; color: #ffd54f; }
+        .rank-n { background: #1e90ff22; color: #4fc3f7; }
+        .trend-name { flex: 1; font-size: 13px; }
+        .trend-value { font-size: 13px; color: #66bb6a; font-weight: 600; }
+
+        /* Filter bar */
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            padding: 12px 40px;
+            background: #0a1628;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 6px 16px;
+            border-radius: 20px;
+            border: 1px solid #1e90ff33;
+            background: transparent;
+            color: #8899aa;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: #1e90ff22;
+            color: #4fc3f7;
+            border-color: #1e90ff;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main { flex-direction: column; }
+            .bottom-section { grid-template-columns: 1fr; }
+        }
+
+        /* Animation */
+        .fade-in { animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Search */
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #0a1628;
+            border: 1px solid #1e90ff33;
+            border-radius: 8px;
+            padding: 6px 12px;
+            margin-bottom: 12px;
+        }
+        .search-box input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #e0e6ed;
+            font-size: 13px;
+            width: 100%;
+        }
+        .search-box input::placeholder { color: #556677; }
+        .search-icon { color: #4fc3f7; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <h1>中国产业带产品分布与供应商看板</h1>
+        <div class="time" id="currentTime"></div>
+    </div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar">
+        <div class="stat-card">
+            <div class="label">覆盖产业带</div>
+            <div class="value">28</div>
+            <div class="sub">全国主要产业集群</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">收录供应商</div>
+            <div class="value">2,460</div>
+            <div class="sub">+186 本月新增</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">产品品类</div>
+            <div class="value">156</div>
+            <div class="sub">跨境热销品类</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">工厂直供占比</div>
+            <div class="value">72%</div>
+            <div class="sub">源头工厂合作</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">平均交付周期</div>
+            <div class="value">18天</div>
+            <div class="sub">含定制打样时间</div>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterRegion('all')">全部区域</button>
+        <button class="filter-btn" onclick="filterRegion('east')">华东</button>
+        <button class="filter-btn" onclick="filterRegion('south')">华南</button>
+        <button class="filter-btn" onclick="filterRegion('north')">华北</button>
+        <button class="filter-btn" onclick="filterRegion('central')">华中</button>
+        <button class="filter-btn" onclick="filterRegion('southwest')">西南</button>
+        <button class="filter-btn" onclick="filterRegion('northeast')">东北</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main">
+        <!-- Left: Industry Belt List -->
+        <div class="left-panel">
+            <div class="panel" style="flex:1">
+                <div class="panel-title"><span class="dot"></span>产业带总览</div>
+                <div class="panel-body">
+                    <div class="search-box">
+                        <span class="search-icon">&#128269;</span>
+                        <input type="text" placeholder="搜索产业带或产品..." id="searchInput" oninput="searchBelt()">
+                    </div>
+                    <div class="belt-list" id="beltList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Map + Detail -->
+        <div class="right-panel">
+            <!-- Map -->
+            <div class="panel">
+                <div class="panel-title"><span class="dot"></span>产业带地理分布</div>
+                <div class="map-container" id="mapContainer">
+                    <svg class="map-svg" viewBox="0 0 800 600" id="mapSvg">
+                        <!-- China outline simplified -->
+                        <path d="M200,80 L280,60 L350,50 L420,55 L500,70 L560,60 L620,80 L660,120 L680,180 L690,240 L700,300 L680,360 L650,400 L600,440 L560,470 L500,500 L440,520 L380,530 L320,520 L270,490 L230,450 L200,400 L180,350 L170,300 L165,250 L170,200 L180,140 Z"
+                              fill="none" stroke="#1e90ff22" stroke-width="2"/>
+                        <!-- Grid lines -->
+                        <line x1="100" y1="150" x2="750" y2="150" stroke="#1e90ff08" stroke-width="1"/>
+                        <line x1="100" y1="300" x2="750" y2="300" stroke="#1e90ff08" stroke-width="1"/>
+                        <line x1="100" y1="450" x2="750" y2="450" stroke="#1e90ff08" stroke-width="1"/>
+                        <line x1="250" y1="30" x2="250" y2="570" stroke="#1e90ff08" stroke-width="1"/>
+                        <line x1="450" y1="30" x2="450" y2="570" stroke="#1e90ff08" stroke-width="1"/>
+                        <line x1="650" y1="30" x2="650" y2="570" stroke="#1e90ff08" stroke-width="1"/>
+                        <!-- Regions will be populated by JS -->
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Detail -->
+            <div class="panel detail-panel">
+                <div class="panel-title"><span class="dot"></span>产业带详情</div>
+                <div class="panel-body" id="detailContent">
+                    <div style="text-align:center;padding:40px;color:#556677;">
+                        <div style="font-size:48px;margin-bottom:16px;">&#128205;</div>
+                        <div>点击左侧产业带或地图上的标记查看详情</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Section -->
+    <div class="bottom-section">
+        <div class="panel">
+            <div class="panel-title"><span class="dot"></span>各区域产业带数量</div>
+            <div class="panel-body">
+                <div class="chart-bar-group" id="regionBars"></div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-title"><span class="dot"></span>供应商类型分布</div>
+            <div class="panel-body">
+                <div class="pie-container" id="pieChart"></div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-title"><span class="dot"></span>热门品类趋势 TOP8</div>
+            <div class="panel-body">
+                <div class="trend-list" id="trendList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ============ DATA ============
+    const industryBelts = [
+        {
+            id: 'yiwu', name: '义乌小商品产业带', region: '华东', province: '浙江',
+            area: 'east', icon: '🏪', color: '#1e90ff',
+            x: 610, y: 340,
+            tags: ['热门', '出口大户', '超大规模'],
+            products: [
+                { name: '日用百货', emoji: '🧹', share: 35 },
+                { name: '饰品配件', emoji: '💎', share: 25 },
+                { name: '玩具', emoji: '🧸', share: 20 },
+                { name: '包装材料', emoji: '📦', share: 12 },
+                { name: '文具办公', emoji: '📝', share: 8 }
+            ],
+            suppliers: [
+                { name: '义乌市鑫达工艺品有限公司', type: 'factory', typeLabel: '工厂', rating: 4.8, capacity: '50万件/月', products: '节日饰品、家居装饰', moq: '500件', contact: '张经理 138****5521' },
+                { name: '浙江百汇塑业集团', type: 'factory', typeLabel: '工厂', rating: 4.6, capacity: '200万件/月', products: '日用塑料、收纳用品', moq: '1000件', contact: '李总 139****8832' },
+                { name: '义乌瑞丰饰品有限公司', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '30万件/月', products: '时尚饰品、发饰', moq: '200件', contact: '王经理 137****6643' },
+                { name: '义乌金达玩具厂', type: 'factory', typeLabel: '工厂', rating: 4.3, capacity: '80万件/月', products: '益智玩具、电动玩具', moq: '500件', contact: '赵总 136****7754' },
+                { name: '浙江恒丰文具有限公司', type: 'brand', typeLabel: '品牌商', rating: 4.7, capacity: '100万件/月', products: '文具套装、办公用品', moq: '300件', contact: '陈经理 135****9965' }
+            ],
+            desc: '全球最大的小商品批发市场，拥有7.5万个商铺，出口至219个国家和地区。产业集群涵盖日用百货、饰品、玩具、文具等40多个行业。年交易额超4000亿元。'
+        },
+        {
+            id: 'shenzhen', name: '深圳电子产业带', region: '华南', province: '广东',
+            area: 'south', icon: '📱', color: '#7c4dff',
+            x: 560, y: 440,
+            tags: ['热门', '科技核心', '出口大户'],
+            products: [
+                { name: '消费电子', emoji: '📱', share: 30 },
+                { name: '智能穿戴', emoji: '⌚', share: 22 },
+                { name: '电脑配件', emoji: '💻', share: 20 },
+                { name: '安防设备', emoji: '📹', share: 15 },
+                { name: 'LED照明', emoji: '💡', share: 13 }
+            ],
+            suppliers: [
+                { name: '深圳市创维电子有限公司', type: 'brand', typeLabel: '品牌商', rating: 4.9, capacity: '100万台/月', products: '智能电视、显示器', moq: '100台', contact: '周总 138****2211' },
+                { name: '深圳华强北数码科技', type: 'trader', typeLabel: '贸易商', rating: 4.5, capacity: '按需', products: '手机配件、数据线', moq: '100件', contact: '吴经理 139****3322' },
+                { name: '深圳锐科智能科技', type: 'factory', typeLabel: '工厂', rating: 4.7, capacity: '20万台/月', products: '智能手表、运动手环', moq: '500台', contact: '林总 136****4433' },
+                { name: '深圳光电科技有限公司', type: 'factory', typeLabel: '工厂', rating: 4.6, capacity: '50万件/月', products: 'LED灯具、灯带', moq: '200件', contact: '黄经理 137****5544' },
+                { name: '深圳安视达科技', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '10万台/月', products: '摄像头、监控系统', moq: '50台', contact: '郑总 135****6655' }
+            ],
+            desc: '全球电子产品制造和创新中心，拥有完整的电子产业链。华强北是全球最大的电子元器件集散地。年电子信息产业产值超2万亿元，出口占全国1/6。'
+        },
+        {
+            id: 'foshan', name: '佛山家具产业带', region: '华南', province: '广东',
+            area: 'south', icon: '🪑', color: '#ffa726',
+            x: 540, y: 445,
+            tags: ['超大规模', '出口大户'],
+            products: [
+                { name: '办公家具', emoji: '🪑', share: 28 },
+                { name: '板式家具', emoji: '🗄️', share: 25 },
+                { name: '软体沙发', emoji: '🛋️', share: 22 },
+                { name: '户外家具', emoji: '🏖️', share: 15 },
+                { name: '定制家具', emoji: '📐', share: 10 }
+            ],
+            suppliers: [
+                { name: '佛山联邦家私集团', type: 'brand', typeLabel: '品牌商', rating: 4.9, capacity: '5万套/月', products: '实木家具、客厅套件', moq: '50套', contact: '杨总 138****7766' },
+                { name: '佛山顺德龙江家具厂', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '3万件/月', products: '办公桌椅、会议桌', moq: '30件', contact: '梁经理 139****8877' },
+                { name: '佛山南海软体家具厂', type: 'factory', typeLabel: '工厂', rating: 4.6, capacity: '2万套/月', products: '沙发、床垫', moq: '20套', contact: '何总 136****9988' },
+                { name: '佛山户外家具有限公司', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '4万件/月', products: '藤编家具、花园系列', moq: '50件', contact: '蒋经理 137****1122' }
+            ],
+            desc: '中国最大的家具产业集群，拥有家具企业超8000家。乐从、龙江是全国最大的家具专业镇，产品远销全球120多个国家。年产值超1500亿元。'
+        },
+        {
+            id: 'quanzhou', name: '泉州鞋服产业带', region: '华东', province: '福建',
+            area: 'east', icon: '👟', color: '#ef5350',
+            x: 600, y: 390,
+            tags: ['热门', '品牌聚集'],
+            products: [
+                { name: '运动鞋', emoji: '👟', share: 35 },
+                { name: '休闲服装', emoji: '👕', share: 25 },
+                { name: '运动服饰', emoji: '🏃', share: 20 },
+                { name: '童装', emoji: '👶', share: 12 },
+                { name: '箱包', emoji: '🎒', share: 8 }
+            ],
+            suppliers: [
+                { name: '泉州匹克体育用品', type: 'brand', typeLabel: '品牌商', rating: 4.8, capacity: '100万双/月', products: '运动鞋、篮球鞋', moq: '500双', contact: '许总 138****2233' },
+                { name: '晋江鸿星尔克实业', type: 'brand', typeLabel: '品牌商', rating: 4.7, capacity: '80万件/月', products: '运动服饰、休闲装', moq: '300件', contact: '吕经理 139****3344' },
+                { name: '泉州佳乐制鞋厂', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '30万双/月', products: '休闲鞋、帆布鞋', moq: '200双', contact: '施总 136****4455' },
+                { name: '石狮利郎服装工业', type: 'brand', typeLabel: '品牌商', rating: 4.6, capacity: '50万件/月', products: '男装、商务休闲', moq: '200件', contact: '蔡经理 137****5566' }
+            ],
+            desc: '中国鞋都、中国纺织服装名城。拥有安踏、特步、361°、匹克等知名品牌。鞋业年产量超20亿双，占全国40%。纺织服装年产值超3000亿元。'
+        },
+        {
+            id: 'dongguan', name: '东莞智能制造产业带', region: '华南', province: '广东',
+            area: 'south', icon: '🏭', color: '#66bb6a',
+            x: 570, y: 438,
+            tags: ['出口大户', '科技核心'],
+            products: [
+                { name: '模具五金', emoji: '🔩', share: 25 },
+                { name: '3C配件', emoji: '🔌', share: 25 },
+                { name: '自动化设备', emoji: '🤖', share: 20 },
+                { name: '塑胶制品', emoji: '🏗️', share: 18 },
+                { name: '精密零件', emoji: '⚙️', share: 12 }
+            ],
+            suppliers: [
+                { name: '东莞劲胜精密模具', type: 'factory', typeLabel: '工厂', rating: 4.8, capacity: '定制', products: 'CNC加工、精密模具', moq: '按图纸', contact: '陈总 138****6677' },
+                { name: '东莞拓普联科电子', type: 'factory', typeLabel: '工厂', rating: 4.6, capacity: '200万件/月', products: '连接器、数据线', moq: '1000件', contact: '刘经理 139****7788' },
+                { name: '东莞智通自动化设备', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '按项目', products: '自动化产线、机器人', moq: '1台', contact: '马总 136****8899' }
+            ],
+            desc: '世界工厂、全球制造业重镇。拥有完善的模具和五金加工产业链，手机零配件产量全球第一。智能制造转型领先，机器人企业超400家。年工业总产值超1.2万亿元。'
+        },
+        {
+            id: 'wenzhou', name: '温州皮革产业带', region: '华东', province: '浙江',
+            area: 'east', icon: '👜', color: '#8d6e63',
+            x: 620, y: 345,
+            tags: ['出口大户'],
+            products: [
+                { name: '皮鞋', emoji: '👞', share: 35 },
+                { name: '皮具箱包', emoji: '👜', share: 30 },
+                { name: '皮带配饰', emoji: '🪡', share: 20 },
+                { name: '皮革原料', emoji: '🧶', share: 15 }
+            ],
+            suppliers: [
+                { name: '温州奥康鞋业', type: 'brand', typeLabel: '品牌商', rating: 4.7, capacity: '60万双/月', products: '商务皮鞋、休闲皮鞋', moq: '300双', contact: '朱总 138****1234' },
+                { name: '温州红蜻蜓皮具', type: 'brand', typeLabel: '品牌商', rating: 4.6, capacity: '20万件/月', products: '皮包、钱包', moq: '200件', contact: '程经理 139****2345' },
+                { name: '温州精益皮革厂', type: 'factory', typeLabel: '工厂', rating: 4.3, capacity: '100万尺/月', products: '真皮面料、PU皮革', moq: '500尺', contact: '叶总 136****3456' }
+            ],
+            desc: '中国鞋革之都，皮革加工历史超百年。拥有奥康、红蜻蜓、康奈等知名品牌。年产皮鞋超15亿双，出口至60多个国家。'
+        },
+        {
+            id: 'hangzhou', name: '杭州跨境电商产业带', region: '华东', province: '浙江',
+            area: 'east', icon: '🛒', color: '#26c6da',
+            x: 600, y: 320,
+            tags: ['热门', '科技核心'],
+            products: [
+                { name: '女装', emoji: '👗', share: 30 },
+                { name: '丝绸制品', emoji: '🧣', share: 22 },
+                { name: '化妆品', emoji: '💄', share: 18 },
+                { name: '数码配件', emoji: '🎧', share: 18 },
+                { name: '家纺', emoji: '🛏️', share: 12 }
+            ],
+            suppliers: [
+                { name: '杭州四季青服饰集团', type: 'trader', typeLabel: '贸易商', rating: 4.6, capacity: '按需', products: '女装、时装', moq: '50件', contact: '孙总 138****4567' },
+                { name: '杭州万事利丝绸', type: 'brand', typeLabel: '品牌商', rating: 4.8, capacity: '30万件/月', products: '丝巾、丝绸家纺', moq: '100件', contact: '屠经理 139****5678' },
+                { name: '杭州贝豪日化', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '50万件/月', products: '护肤品、面膜', moq: '500件', contact: '钱总 136****6789' }
+            ],
+            desc: '全国跨境电商综试区先行者，阿里巴巴总部所在地。四季青服装市场年交易额超1000亿，丝绸产业全球领先。跨境电商年交易额超5000亿元。'
+        },
+        {
+            id: 'shantou', name: '汕头玩具产业带', region: '华南', province: '广东',
+            area: 'south', icon: '🧸', color: '#ff7043',
+            x: 580, y: 430,
+            tags: ['超大规模', '出口大户'],
+            products: [
+                { name: '塑料玩具', emoji: '🧩', share: 30 },
+                { name: '电动玩具', emoji: '🚗', share: 25 },
+                { name: '毛绒玩具', emoji: '🧸', share: 20 },
+                { name: '益智玩具', emoji: '🎲', share: 15 },
+                { name: '动漫周边', emoji: '🦸', share: 10 }
+            ],
+            suppliers: [
+                { name: '汕头澄海奥迪玩具', type: 'brand', typeLabel: '品牌商', rating: 4.8, capacity: '100万件/月', products: '积木、遥控车', moq: '500件', contact: '纪总 138****7890' },
+                { name: '汕头华达玩具厂', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '80万件/月', products: '塑料玩具、电动玩具', moq: '300件', contact: '刘经理 139****8901' },
+                { name: '汕头美佳乐毛绒', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '40万件/月', products: '毛绒公仔、抱枕', moq: '200件', contact: '张总 136****9012' }
+            ],
+            desc: '中国玩具之都，全球玩具30%产自汕头澄海。拥有玩具生产企业超5000家，配套企业3000余家。年产值超600亿元，产品出口至140多个国家。'
+        },
+        {
+            id: 'ningbo', name: '宁波家电产业带', region: '华东', province: '浙江',
+            area: 'east', icon: '🏠', color: '#42a5f5',
+            x: 625, y: 325,
+            tags: ['出口大户', '超大规模'],
+            products: [
+                { name: '小家电', emoji: '🍳', share: 30 },
+                { name: '厨房电器', emoji: '🍽️', share: 25 },
+                { name: '清洁电器', emoji: '🧹', share: 20 },
+                { name: '个护电器', emoji: '💇', share: 15 },
+                { name: '照明电器', emoji: '💡', share: 10 }
+            ],
+            suppliers: [
+                { name: '宁波公牛集团', type: 'brand', typeLabel: '品牌商', rating: 4.9, capacity: '200万件/月', products: '插座、开关面板', moq: '500件', contact: '阮总 138****0123' },
+                { name: '宁波德业日用电器', type: 'factory', typeLabel: '工厂', rating: 4.6, capacity: '50万台/月', products: '除湿机、空气净化器', moq: '100台', contact: '陆经理 139****1234' },
+                { name: '慈溪天信电器厂', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '80万件/月', products: '电熨斗、电吹风', moq: '200件', contact: '俞总 136****2345' }
+            ],
+            desc: '中国家电之城，小家电年出口额超100亿美元。慈溪是中国三大家电生产基地之一，素有"家电之都"之称。拥有家电及配套企业超2000家。'
+        },
+        {
+            id: 'zhongshan', name: '中山灯饰产业带', region: '华南', province: '广东',
+            area: 'south', icon: '💡', color: '#ffca28',
+            x: 550, y: 448,
+            tags: ['超大规模'],
+            products: [
+                { name: '装饰灯具', emoji: '🪔', share: 30 },
+                { name: '吊灯/吸顶灯', emoji: '🏮', share: 25 },
+                { name: 'LED灯', emoji: '💡', share: 25 },
+                { name: '户外灯具', emoji: '🔦', share: 20 }
+            ],
+            suppliers: [
+                { name: '中山古镇华艺灯饰', type: 'brand', typeLabel: '品牌商', rating: 4.8, capacity: '10万盏/月', products: '水晶吊灯、现代灯', moq: '50盏', contact: '区总 138****3456' },
+                { name: '中山欧普照明', type: 'brand', typeLabel: '品牌商', rating: 4.9, capacity: '100万件/月', products: 'LED灯、智能照明', moq: '200件', contact: '马经理 139****4567' },
+                { name: '中山古镇兴达灯具厂', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '20万盏/月', products: '装饰灯、台灯', moq: '100盏', contact: '苏总 136****5678' }
+            ],
+            desc: '中国灯都，古镇镇是全国最大的灯饰专业生产基地和批发市场。灯饰企业超3万家，占国内灯饰市场份额70%以上。年产值超千亿元。'
+        },
+        {
+            id: 'cangzhou', name: '沧州五金产业带', region: '华北', province: '河北',
+            area: 'north', icon: '🔧', color: '#78909c',
+            x: 490, y: 190,
+            tags: [],
+            products: [
+                { name: '管道配件', emoji: '🔧', share: 35 },
+                { name: '弯头法兰', emoji: '⚙️', share: 30 },
+                { name: '阀门', emoji: '🚰', share: 20 },
+                { name: '铸造件', emoji: '🏗️', share: 15 }
+            ],
+            suppliers: [
+                { name: '沧州天翔管道制造', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '5000吨/月', products: '钢管、弯头', moq: '1吨', contact: '王总 138****6789' },
+                { name: '河北鑫科管件', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '3000吨/月', products: '法兰、三通', moq: '0.5吨', contact: '刘经理 139****7890' }
+            ],
+            desc: '中国管道装备制造基地，盐山县被誉为"中国管道装备制造之乡"。年产各类管道配件超500万吨，国内市场份额超25%。'
+        },
+        {
+            id: 'nantong', name: '南通家纺产业带', region: '华东', province: '江苏',
+            area: 'east', icon: '🛏️', color: '#ab47bc',
+            x: 610, y: 290,
+            tags: ['出口大户'],
+            products: [
+                { name: '床上用品', emoji: '🛏️', share: 35 },
+                { name: '毛巾浴巾', emoji: '🧖', share: 25 },
+                { name: '窗帘布艺', emoji: '🪟', share: 22 },
+                { name: '地毯', emoji: '🏠', share: 18 }
+            ],
+            suppliers: [
+                { name: '南通罗莱家纺', type: 'brand', typeLabel: '品牌商', rating: 4.8, capacity: '100万套/月', products: '四件套、被芯', moq: '200套', contact: '薛总 138****8901' },
+                { name: '南通海门三星绣品', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '50万件/月', products: '毛巾、浴巾', moq: '500件', contact: '顾经理 139****9012' },
+                { name: '如皋晟辉纺织', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '30万米/月', products: '窗帘面料、沙发布', moq: '300米', contact: '秦总 136****0123' }
+            ],
+            desc: '中国家纺之都，海门叠石桥是全国最大的家纺专业市场。拥有家纺企业超5000家，产品出口50多个国家。年交易额超2000亿元。'
+        },
+        {
+            id: 'chaoshan', name: '潮汕不锈钢产业带', region: '华南', province: '广东',
+            area: 'south', icon: '🍳', color: '#90a4ae',
+            x: 595, y: 428,
+            tags: [],
+            products: [
+                { name: '不锈钢餐具', emoji: '🍴', share: 30 },
+                { name: '不锈钢厨具', emoji: '🍳', share: 30 },
+                { name: '保温杯壶', emoji: '☕', share: 25 },
+                { name: '不锈钢制品', emoji: '🏺', share: 15 }
+            ],
+            suppliers: [
+                { name: '潮州凤塘振能不锈钢', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '60万件/月', products: '餐具套装、刀叉', moq: '500套', contact: '黄总 138****1122' },
+                { name: '揭阳新兴五金厨具', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '40万件/月', products: '锅具、蒸锅', moq: '300件', contact: '陈经理 139****2233' }
+            ],
+            desc: '中国不锈钢制品之乡，揭阳和潮安是全国最大的不锈钢制品生产基地。年产不锈钢制品超200万吨，出口全球100多个国家。'
+        },
+        {
+            id: 'chengdu', name: '成都鞋业产业带', region: '西南', province: '四川',
+            area: 'southwest', icon: '👠', color: '#ec407a',
+            x: 370, y: 370,
+            tags: [],
+            products: [
+                { name: '女鞋', emoji: '👠', share: 40 },
+                { name: '凉鞋', emoji: '🩴', share: 25 },
+                { name: '童鞋', emoji: '👟', share: 20 },
+                { name: '鞋材', emoji: '🧵', share: 15 }
+            ],
+            suppliers: [
+                { name: '成都武侯女鞋产业园', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '50万双/月', products: '时尚女鞋、高跟鞋', moq: '200双', contact: '刘总 138****3344' },
+                { name: '成都蒲江鞋业', type: 'factory', typeLabel: '工厂', rating: 4.3, capacity: '30万双/月', products: '休闲鞋、运动鞋', moq: '300双', contact: '范经理 139****4455' }
+            ],
+            desc: '中国女鞋之都，武侯区是全国三大鞋业集中地之一。女鞋年产量约5亿双，产值约600亿元，出口至东南亚、中东等市场。'
+        },
+        {
+            id: 'jieyang', name: '揭阳塑料产业带', region: '华南', province: '广东',
+            area: 'south', icon: '♻️', color: '#26a69a',
+            x: 590, y: 435,
+            tags: [],
+            products: [
+                { name: '塑料日用品', emoji: '🪣', share: 35 },
+                { name: '塑料包装', emoji: '📦', share: 25 },
+                { name: '塑料模具', emoji: '🔲', share: 20 },
+                { name: '再生塑料', emoji: '♻️', share: 20 }
+            ],
+            suppliers: [
+                { name: '揭阳榕城塑料城', type: 'trader', typeLabel: '贸易商', rating: 4.3, capacity: '按需', products: '塑料原料、半成品', moq: '1吨', contact: '吴总 138****5566' },
+                { name: '揭阳普宁恒丰塑业', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '100万件/月', products: '收纳箱、垃圾桶', moq: '500件', contact: '林经理 139****6677' }
+            ],
+            desc: '中国塑料城，揭阳塑料产业起步于上世纪80年代。现有塑料企业超3000家，年加工量超600万吨，是华南最大的塑料原料集散地。'
+        },
+        {
+            id: 'zibo', name: '淄博陶瓷产业带', region: '华北', province: '山东',
+            area: 'north', icon: '🏺', color: '#bcaaa4',
+            x: 540, y: 220,
+            tags: [],
+            products: [
+                { name: '日用陶瓷', emoji: '🍵', share: 35 },
+                { name: '建筑陶瓷', emoji: '🧱', share: 30 },
+                { name: '工艺陶瓷', emoji: '🏺', share: 20 },
+                { name: '功能陶瓷', emoji: '⚗️', share: 15 }
+            ],
+            suppliers: [
+                { name: '淄博硅元新型材料', type: 'factory', typeLabel: '工厂', rating: 4.7, capacity: '30万件/月', products: '高端日用瓷、骨瓷', moq: '200件', contact: '殷总 138****7788' },
+                { name: '淄博金马陶瓷', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '50万平/月', products: '墙砖、地砖', moq: '100平', contact: '宋经理 139****8899' }
+            ],
+            desc: '中国五大陶瓷产区之一，陶瓷生产历史超8000年。现有陶瓷企业超500家，年产各类陶瓷超30亿件，出口至80多个国家。'
+        },
+        {
+            id: 'yongkang', name: '永康五金产业带', region: '华东', province: '浙江',
+            area: 'east', icon: '🔨', color: '#607d8b',
+            x: 608, y: 335,
+            tags: ['出口大户'],
+            products: [
+                { name: '电动工具', emoji: '🔨', share: 30 },
+                { name: '防盗门', emoji: '🚪', share: 25 },
+                { name: '保温杯', emoji: '☕', share: 25 },
+                { name: '不锈钢制品', emoji: '🔩', share: 20 }
+            ],
+            suppliers: [
+                { name: '永康哈尔斯真空科技', type: 'brand', typeLabel: '品牌商', rating: 4.8, capacity: '300万只/月', products: '保温杯、水杯', moq: '500只', contact: '吕总 138****9900' },
+                { name: '永康正阳实业', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '10万套/月', products: '电动工具套装', moq: '100套', contact: '胡经理 139****0011' },
+                { name: '永康步阳集团', type: 'brand', typeLabel: '品牌商', rating: 4.7, capacity: '5万樘/月', products: '防盗门、安全门', moq: '50樘', contact: '周总 136****1122' }
+            ],
+            desc: '中国五金之都，五金产业历史超千年。拥有五金企业超1万家，电动工具、保温杯全国市场占有率超70%。年工业总产值超1500亿元。'
+        },
+        {
+            id: 'wuhan', name: '武汉光电产业带', region: '华中', province: '湖北',
+            area: 'central', icon: '🔬', color: '#29b6f6',
+            x: 480, y: 330,
+            tags: ['科技核心'],
+            products: [
+                { name: '光纤光缆', emoji: '🔬', share: 35 },
+                { name: '激光设备', emoji: '⚡', share: 30 },
+                { name: '光电器件', emoji: '🔭', share: 20 },
+                { name: '传感器', emoji: '📡', share: 15 }
+            ],
+            suppliers: [
+                { name: '武汉长飞光纤', type: 'brand', typeLabel: '品牌商', rating: 4.9, capacity: '定制', products: '光纤、光缆、预制棒', moq: '按合同', contact: '庄总 138****2233' },
+                { name: '武汉华工激光', type: 'brand', typeLabel: '品牌商', rating: 4.8, capacity: '定制', products: '激光切割机、焊接机', moq: '1台', contact: '邓经理 139****3344' },
+                { name: '武汉锐科光纤激光', type: 'factory', typeLabel: '工厂', rating: 4.7, capacity: '定制', products: '光纤激光器', moq: '1台', contact: '闫总 136****4455' }
+            ],
+            desc: '中国光谷，东湖高新区是全球最大的光纤光缆生产基地。光纤光缆市场份额全球第一，激光产业规模全国第一。年产值超5000亿元。'
+        },
+        {
+            id: 'zhangzhou', name: '漳州食品产业带', region: '华东', province: '福建',
+            area: 'east', icon: '🍜', color: '#ff8a65',
+            x: 590, y: 400,
+            tags: [],
+            products: [
+                { name: '罐头食品', emoji: '🥫', share: 30 },
+                { name: '休闲零食', emoji: '🍪', share: 25 },
+                { name: '速冻食品', emoji: '🥟', share: 25 },
+                { name: '调味品', emoji: '🧂', share: 20 }
+            ],
+            suppliers: [
+                { name: '漳州紫山食品集团', type: 'brand', typeLabel: '品牌商', rating: 4.6, capacity: '200万罐/月', products: '水果罐头、蔬菜罐头', moq: '1000罐', contact: '洪总 138****5566' },
+                { name: '漳州天新食品', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '100万件/月', products: '休闲零食、糕点', moq: '500件', contact: '韩经理 139****6677' }
+            ],
+            desc: '中国食品名城，全国最大的罐头出口基地。拥有食品加工企业超3000家，罐头产量占全国25%以上。年出口额超50亿美元。'
+        },
+        {
+            id: 'jiangmen', name: '江门卫浴产业带', region: '华南', province: '广东',
+            area: 'south', icon: '🚿', color: '#4db6ac',
+            x: 530, y: 450,
+            tags: [],
+            products: [
+                { name: '水龙头', emoji: '🚰', share: 30 },
+                { name: '花洒', emoji: '🚿', share: 25 },
+                { name: '浴室柜', emoji: '🪞', share: 25 },
+                { name: '五金挂件', emoji: '🪝', share: 20 }
+            ],
+            suppliers: [
+                { name: '开平水口镇辉煌卫浴', type: 'brand', typeLabel: '品牌商', rating: 4.7, capacity: '50万件/月', products: '水龙头、花洒', moq: '200件', contact: '余总 138****7788' },
+                { name: '江门金牌卫浴', type: 'brand', typeLabel: '品牌商', rating: 4.6, capacity: '30万件/月', products: '马桶、浴缸', moq: '100件', contact: '潘经理 139****8899' }
+            ],
+            desc: '中国水暖卫浴之乡，开平水口镇是全国最大的水暖卫浴生产基地。拥有卫浴企业超1500家，产品出口至100多个国家。年产值超500亿元。'
+        },
+        {
+            id: 'dalian', name: '大连海产品产业带', region: '东北', province: '辽宁',
+            area: 'northeast', icon: '🦐', color: '#4dd0e1',
+            x: 560, y: 130,
+            tags: [],
+            products: [
+                { name: '海参鲍鱼', emoji: '🦪', share: 30 },
+                { name: '冷冻海鲜', emoji: '🦐', share: 30 },
+                { name: '海产干货', emoji: '🐟', share: 25 },
+                { name: '水产加工品', emoji: '🍣', share: 15 }
+            ],
+            suppliers: [
+                { name: '大连獐子岛集团', type: 'brand', typeLabel: '品牌商', rating: 4.6, capacity: '定制', products: '海参、扇贝、鲍鱼', moq: '按合同', contact: '于总 138****9900' },
+                { name: '大连天正实业', type: 'factory', typeLabel: '工厂', rating: 4.4, capacity: '500吨/月', products: '冷冻虾仁、鱿鱼', moq: '1吨', contact: '韩经理 139****0011' }
+            ],
+            desc: '中国北方最大的海产品集散地，拥有3000多家水产加工企业。海参产量全国第一，水产品年出口额超30亿美元。'
+        },
+        {
+            id: 'suzhou', name: '苏州精密制造产业带', region: '华东', province: '江苏',
+            area: 'east', icon: '⚙️', color: '#5c6bc0',
+            x: 600, y: 300,
+            tags: ['科技核心', '出口大户'],
+            products: [
+                { name: '精密模具', emoji: '🔩', share: 25 },
+                { name: '电子元件', emoji: '📡', share: 25 },
+                { name: '机械零件', emoji: '⚙️', share: 25 },
+                { name: '医疗器械', emoji: '🏥', share: 15 },
+                { name: '新材料', emoji: '🧪', share: 10 }
+            ],
+            suppliers: [
+                { name: '苏州盛利维尔精密机械', type: 'factory', typeLabel: '工厂', rating: 4.7, capacity: '定制', products: '精密切割线、模具', moq: '按项目', contact: '唐总 138****1234' },
+                { name: '苏州固锝电子', type: 'brand', typeLabel: '品牌商', rating: 4.8, capacity: '5000万只/月', products: '二极管、整流器', moq: '10000只', contact: '吴经理 139****2345' }
+            ],
+            desc: '长三角高端制造核心区，拥有苏州工业园区、昆山开发区等国家级园区。精密制造、电子信息等产业规模全国领先。年工业总产值超4万亿元。'
+        },
+        {
+            id: 'changsha', name: '长沙工程机械产业带', region: '华中', province: '湖南',
+            area: 'central', icon: '🏗️', color: '#fdd835',
+            x: 470, y: 380,
+            tags: ['超大规模'],
+            products: [
+                { name: '挖掘机', emoji: '🚜', share: 30 },
+                { name: '起重机', emoji: '🏗️', share: 25 },
+                { name: '混凝土机械', emoji: '🧱', share: 25 },
+                { name: '盾构机', emoji: '⛏️', share: 20 }
+            ],
+            suppliers: [
+                { name: '三一重工股份有限公司', type: 'brand', typeLabel: '品牌商', rating: 4.9, capacity: '按合同', products: '挖掘机、起重机', moq: '1台', contact: '向总 138****3456' },
+                { name: '中联重科股份有限公司', type: 'brand', typeLabel: '品牌商', rating: 4.9, capacity: '按合同', products: '混凝土泵车、塔吊', moq: '1台', contact: '詹经理 139****4567' }
+            ],
+            desc: '世界工程机械之都，拥有三一重工、中联重科、铁建重工等龙头企业。工程机械产业集群规模全球第一，年产值超2000亿元。'
+        },
+        {
+            id: 'jingdezhen', name: '景德镇陶瓷产业带', region: '华东', province: '江西',
+            area: 'east', icon: '🏺', color: '#a1887f',
+            x: 530, y: 360,
+            tags: [],
+            products: [
+                { name: '艺术陶瓷', emoji: '🎨', share: 35 },
+                { name: '日用瓷器', emoji: '🍵', share: 25 },
+                { name: '建筑陶瓷', emoji: '🧱', share: 20 },
+                { name: '工业陶瓷', emoji: '⚗️', share: 20 }
+            ],
+            suppliers: [
+                { name: '景德镇法蓝瓷实业', type: 'brand', typeLabel: '品牌商', rating: 4.8, capacity: '10万件/月', products: '艺术瓷、礼品瓷', moq: '100件', contact: '陈总 138****5678' },
+                { name: '景德镇红叶陶瓷', type: 'brand', typeLabel: '品牌商', rating: 4.7, capacity: '50万件/月', products: '日用陶瓷、茶具', moq: '200件', contact: '邓经理 139****6789' }
+            ],
+            desc: '千年瓷都，世界陶瓷艺术圣地。高端艺术陶瓷和日用陶瓷享誉全球，拥有陶瓷企业超6000家。年产值超500亿元，产品出口至全球。'
+        },
+        {
+            id: 'hefei', name: '合肥智能家居产业带', region: '华东', province: '安徽',
+            area: 'east', icon: '🏠', color: '#81c784',
+            x: 540, y: 310,
+            tags: ['科技核心'],
+            products: [
+                { name: '智能家电', emoji: '📺', share: 30 },
+                { name: '智能锁', emoji: '🔐', share: 25 },
+                { name: '智能音箱', emoji: '🔊', share: 25 },
+                { name: '扫地机器人', emoji: '🤖', share: 20 }
+            ],
+            suppliers: [
+                { name: '合肥美的集团', type: 'brand', typeLabel: '品牌商', rating: 4.9, capacity: '100万台/月', products: '空调、冰箱、洗衣机', moq: '50台', contact: '方总 138****7890' },
+                { name: '科大讯飞智能科技', type: 'brand', typeLabel: '品牌商', rating: 4.8, capacity: '定制', products: '智能语音、AI硬件', moq: '100台', contact: '刘经理 139****8901' }
+            ],
+            desc: '全国最大的家电制造基地之一，拥有美的、海尔、格力等巨头的制造基地。智能家居产业快速崛起，年产值超3000亿元。'
+        },
+        {
+            id: 'taizhou', name: '台州塑料模具产业带', region: '华东', province: '浙江',
+            area: 'east', icon: '🔲', color: '#4caf50',
+            x: 615, y: 340,
+            tags: ['出口大户'],
+            products: [
+                { name: '汽车模具', emoji: '🚗', share: 30 },
+                { name: '家电模具', emoji: '🔲', share: 25 },
+                { name: '日用品模具', emoji: '🏠', share: 25 },
+                { name: '医疗模具', emoji: '💊', share: 20 }
+            ],
+            suppliers: [
+                { name: '台州黄岩精诚模具', type: 'factory', typeLabel: '工厂', rating: 4.7, capacity: '200套/月', products: '汽车模具、家电模具', moq: '1套', contact: '叶总 138****9012' },
+                { name: '台州路桥瑞盈塑业', type: 'factory', typeLabel: '工厂', rating: 4.5, capacity: '80万件/月', products: '塑料制品、注塑加工', moq: '500件', contact: '蔡经理 139****0123' }
+            ],
+            desc: '中国模具之乡，黄岩是全国最大的塑料模具生产基地。拥有模具企业超2000家，塑料制品企业超1万家。年模具产值超200亿元。'
+        }
+    ];
+
+    // Region aggregation
+    const regionMap = {
+        east: { name: '华东', color: '#1e90ff' },
+        south: { name: '华南', color: '#7c4dff' },
+        north: { name: '华北', color: '#ffa726' },
+        central: { name: '华中', color: '#66bb6a' },
+        southwest: { name: '西南', color: '#ec407a' },
+        northeast: { name: '东北', color: '#4dd0e1' }
+    };
+
+    // ============ INIT ============
+    let currentBelt = null;
+    let currentFilter = 'all';
+
+    function init() {
+        updateTime();
+        setInterval(updateTime, 1000);
+        renderBeltList(industryBelts);
+        renderMap();
+        renderRegionBars();
+        renderPieChart();
+        renderTrendList();
+    }
+
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('currentTime').textContent =
+            now.toLocaleDateString('zh-CN') + ' ' + now.toLocaleTimeString('zh-CN') + ' 数据更新';
+    }
+
+    // ============ BELT LIST ============
+    function renderBeltList(belts) {
+        const list = document.getElementById('beltList');
+        list.innerHTML = belts.map(b => `
+            <div class="belt-item ${currentBelt?.id === b.id ? 'active' : ''}" onclick="selectBelt('${b.id}')">
+                <div class="belt-icon" style="background:${b.color}22;color:${b.color}">${b.icon}</div>
+                <div class="belt-info">
+                    <div class="belt-name">${b.name}</div>
+                    <div class="belt-region">${b.province} · ${b.region}</div>
+                </div>
+                <div class="belt-count">${b.suppliers.length}家</div>
+            </div>
+        `).join('');
+    }
+
+    function searchBelt() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = industryBelts.filter(b => {
+            if (currentFilter !== 'all' && b.area !== currentFilter) return false;
+            if (!q) return true;
+            return b.name.toLowerCase().includes(q) ||
+                   b.province.includes(q) ||
+                   b.products.some(p => p.name.toLowerCase().includes(q));
+        });
+        renderBeltList(filtered);
+    }
+
+    function filterRegion(area) {
+        currentFilter = area;
+        document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+        searchBelt();
+    }
+
+    // ============ MAP ============
+    function renderMap() {
+        const svg = document.getElementById('mapSvg');
+        industryBelts.forEach(b => {
+            // Pulse ring
+            const pulse = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            pulse.setAttribute('cx', b.x);
+            pulse.setAttribute('cy', b.y);
+            pulse.setAttribute('r', '8');
+            pulse.setAttribute('fill', 'none');
+            pulse.setAttribute('stroke', b.color);
+            pulse.setAttribute('stroke-width', '1.5');
+            pulse.setAttribute('opacity', '0.5');
+            pulse.classList.add('pulse-ring');
+            pulse.style.animationDelay = `${Math.random() * 2}s`;
+            svg.appendChild(pulse);
+
+            // Main dot
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', b.x);
+            circle.setAttribute('cy', b.y);
+            circle.setAttribute('r', Math.max(4, b.suppliers.length * 1.5));
+            circle.setAttribute('fill', b.color);
+            circle.setAttribute('opacity', '0.85');
+            circle.classList.add('region-dot');
+            circle.onclick = () => selectBelt(b.id);
+            svg.appendChild(circle);
+
+            // Label
+            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('x', b.x + 12);
+            text.setAttribute('y', b.y + 4);
+            text.classList.add('region-label');
+            text.textContent = b.name.replace(/产业带$/, '');
+            svg.appendChild(text);
+        });
+    }
+
+    // ============ DETAIL ============
+    function selectBelt(id) {
+        const belt = industryBelts.find(b => b.id === id);
+        if (!belt) return;
+        currentBelt = belt;
+        renderBeltList(currentFilter === 'all' ? industryBelts : industryBelts.filter(b => b.area === currentFilter));
+
+        const tagsHtml = belt.tags.map(t => {
+            const cls = t === '热门' ? 'tag-hot' : t === '出口大户' ? 'tag-export' : 'tag-scale';
+            return `<span class="tag ${cls}">${t}</span>`;
+        }).join('');
+
+        const productsHtml = belt.products.map(p => `
+            <div class="product-card">
+                <div class="product-emoji">${p.emoji}</div>
+                <div class="product-name">${p.name}</div>
+                <div class="product-share">占比 ${p.share}%</div>
+                <div class="product-bar"><div class="product-bar-fill" style="width:${p.share}%"></div></div>
+            </div>
+        `).join('');
+
+        const suppliersHtml = belt.suppliers.map(s => {
+            const typeCls = s.type === 'factory' ? 'type-factory' : s.type === 'brand' ? 'type-brand' : 'type-trader';
+            const stars = '★'.repeat(Math.floor(s.rating)) + (s.rating % 1 >= 0.5 ? '☆' : '');
+            return `
+            <tr>
+                <td><div class="supplier-name">${s.name}</div><div style="font-size:11px;color:#8899aa;margin-top:2px">${s.products}</div></td>
+                <td><span class="supplier-type ${typeCls}">${s.typeLabel}</span></td>
+                <td><span class="rating-stars">${stars}</span> <span style="font-size:12px;color:#8899aa">${s.rating}</span></td>
+                <td class="capacity">${s.capacity}</td>
+                <td style="font-size:12px">${s.moq}</td>
+                <td style="font-size:12px;color:#8899aa">${s.contact}</td>
+            </tr>`;
+        }).join('');
+
+        document.getElementById('detailContent').innerHTML = `
+            <div class="fade-in">
+                <div class="detail-header">
+                    <h3>${belt.icon} ${belt.name}</h3>
+                    <div class="detail-tags">${tagsHtml}</div>
+                </div>
+                <p style="font-size:13px;color:#8899aa;line-height:1.8;margin-bottom:20px">${belt.desc}</p>
+
+                <div style="font-size:14px;font-weight:600;color:#4fc3f7;margin-bottom:12px">主要产品分布</div>
+                <div class="product-grid">${productsHtml}</div>
+
+                <div style="font-size:14px;font-weight:600;color:#4fc3f7;margin-bottom:12px">优质供应商</div>
+                <table class="supplier-table">
+                    <thead><tr><th>供应商</th><th>类型</th><th>评分</th><th>产能</th><th>MOQ</th><th>联系方式</th></tr></thead>
+                    <tbody>${suppliersHtml}</tbody>
+                </table>
+            </div>
+        `;
+    }
+
+    // ============ BOTTOM CHARTS ============
+    function renderRegionBars() {
+        const counts = {};
+        industryBelts.forEach(b => {
+            counts[b.area] = (counts[b.area] || 0) + 1;
+        });
+        const maxCount = Math.max(...Object.values(counts));
+        const colors = ['bar-blue', 'bar-purple', 'bar-green', 'bar-orange', 'bar-blue', 'bar-purple'];
+        let i = 0;
+        let html = '';
+        for (const [area, info] of Object.entries(regionMap)) {
+            const count = counts[area] || 0;
+            const pct = (count / maxCount * 100).toFixed(0);
+            html += `
+                <div class="chart-bar-item">
+                    <div class="chart-bar-label">${info.name}</div>
+                    <div class="chart-bar-track">
+                        <div class="chart-bar-fill ${colors[i % colors.length]}" style="width:${pct}%">${count}个</div>
+                    </div>
+                </div>`;
+            i++;
+        }
+        document.getElementById('regionBars').innerHTML = html;
+    }
+
+    function renderPieChart() {
+        let factory = 0, brand = 0, trader = 0;
+        industryBelts.forEach(b => b.suppliers.forEach(s => {
+            if (s.type === 'factory') factory++;
+            else if (s.type === 'brand') brand++;
+            else trader++;
+        }));
+        const total = factory + brand + trader;
+        const data = [
+            { label: '源头工厂', count: factory, color: '#1e90ff' },
+            { label: '品牌商', count: brand, color: '#66bb6a' },
+            { label: '贸易商', count: trader, color: '#ffa726' }
+        ];
+
+        let offset = 0;
+        let paths = '';
+        data.forEach(d => {
+            const pct = d.count / total;
+            const large = pct > 0.5 ? 1 : 0;
+            const startAngle = offset * 2 * Math.PI;
+            const endAngle = (offset + pct) * 2 * Math.PI;
+            const x1 = 70 + 60 * Math.sin(startAngle);
+            const y1 = 70 - 60 * Math.cos(startAngle);
+            const x2 = 70 + 60 * Math.sin(endAngle);
+            const y2 = 70 - 60 * Math.cos(endAngle);
+            paths += `<path d="M70,70 L${x1},${y1} A60,60 0 ${large},1 ${x2},${y2} Z" fill="${d.color}" opacity="0.85"/>`;
+            offset += pct;
+        });
+
+        const legendHtml = data.map(d => `
+            <div class="pie-legend-item">
+                <div class="pie-legend-dot" style="background:${d.color}"></div>
+                <span>${d.label}：${d.count}家（${(d.count/total*100).toFixed(0)}%）</span>
+            </div>
+        `).join('');
+
+        document.getElementById('pieChart').innerHTML = `
+            <svg class="pie-svg" viewBox="0 0 140 140">${paths}</svg>
+            <div class="pie-legend">${legendHtml}</div>
+        `;
+    }
+
+    function renderTrendList() {
+        const productCounts = {};
+        industryBelts.forEach(b => b.products.forEach(p => {
+            productCounts[p.name] = (productCounts[p.name] || 0) + p.share;
+        }));
+        const sorted = Object.entries(productCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+        const html = sorted.map(([name, score], i) => {
+            const rankCls = i === 0 ? 'rank-1' : i === 1 ? 'rank-2' : i === 2 ? 'rank-3' : 'rank-n';
+            return `
+                <div class="trend-item">
+                    <span class="trend-rank ${rankCls}">${i + 1}</span>
+                    <span class="trend-name">${name}</span>
+                    <span class="trend-value">热度 ${score}</span>
+                </div>`;
+        }).join('');
+        document.getElementById('trendList').innerHTML = html;
+    }
+
+    // Initialize
+    init();
+    </script>
+</body>
+</html>
