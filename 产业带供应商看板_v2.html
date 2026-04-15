@@ -533,6 +533,431 @@ belts.forEach((belt, idx) => {
   card.style.animationDelay = (0.05 + idx * 0.07) + 's';
   card.style.setProperty('--belt-color', belt.color);
   card.querySelector || (card.innerHTML = `
+
+  /* ===== PROFIT CALCULATOR (from toolbox dashboard) ===== */
+  .profit-modal-overlay{position:fixed;inset:0;background:rgba(5,8,22,0.7);backdrop-filter:blur(6px);z-index:300;display:none;align-items:center;justify-content:center}
+  .profit-modal-overlay.active{display:flex}
+  .profit-modal{width:96vw;max-width:1400px;height:92vh;background:#0c1029;border:1px solid #1c2460;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.5)}
+  .profit-modal-header{padding:16px 24px;background:#101536;border-bottom:1px solid #1c2460;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  .profit-modal-header h2{font-size:18px;font-weight:700;color:#eef1ff;margin:0}
+  .profit-modal-close{width:36px;height:36px;border-radius:10px;border:1px solid #1c2460;background:#0c1029;color:#6b7db3;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+  .profit-modal-close:hover{border-color:#5b8def;color:#5b8def}
+  .profit-modal-body{flex:1;display:flex;overflow:hidden}
+  .profit-left{width:55%;overflow-y:auto;padding:20px;border-right:1px solid #1c2460}
+  .profit-right{width:45%;overflow-y:auto;padding:20px}
+  .profit-group{margin-bottom:16px;background:#101536;border:1px solid #1c2460;border-radius:12px;overflow:hidden}
+  .profit-group-title{padding:12px 16px;font-size:13px;font-weight:700;color:#c9d1e8;background:rgba(91,141,239,0.06);border-bottom:1px solid #1c2460;cursor:default}
+  .profit-group-title.collapsible{cursor:pointer}
+  .profit-group-title.collapsible::after{content:'▾';float:right;transition:transform .2s}
+  .profit-group-title.expanded::after{transform:rotate(180deg)}
+  .profit-group-content{padding:14px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .profit-group-content.collapsed{display:none}
+  .profit-field{display:flex;flex-direction:column;gap:4px}
+  .profit-field.span3{grid-column:span 3}
+  .profit-field label{font-size:11px;color:#6b7db3;font-weight:500}
+  .profit-field input,.profit-field select{padding:8px 10px;background:rgba(0,0,0,0.3);border:1px solid #1c2460;border-radius:8px;color:#eef1ff;font-size:13px;outline:none;transition:border .2s}
+  .profit-field input:focus,.profit-field select:focus{border-color:#5b8def}
+  .pc-platform-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .pc-platform-grid label{display:flex;align-items:center;gap:6px;padding:6px 8px;background:rgba(0,0,0,0.2);border:1px solid #1c2460;border-radius:8px;font-size:11px;color:#c9d1e8;cursor:pointer;transition:all .2s}
+  .pc-platform-grid label:has(input:checked){background:rgba(91,141,239,0.1);border-color:rgba(91,141,239,0.3)}
+  .pc-ot-tag{font-size:9px;padding:1px 5px;background:rgba(91,141,239,0.12);color:#5b8def;border-radius:4px;white-space:nowrap}
+  .pc-ot-sel{font-size:10px;padding:1px 4px;background:rgba(0,0,0,0.3);border:1px solid #1c2460;color:#c9d1e8;border-radius:4px}
+  .pc-plat-actions{display:flex;gap:8px;margin-top:8px}
+  .pc-plat-actions button{padding:4px 12px;font-size:11px;background:rgba(91,141,239,0.08);border:1px solid rgba(91,141,239,0.2);border-radius:6px;color:#5b8def;cursor:pointer;transition:all .2s}
+  .pc-plat-actions button:hover{background:rgba(91,141,239,0.2)}
+  .pc-amazon-group{flex-wrap:wrap}
+  .pc-amz-checks{display:flex;gap:4px;margin-left:auto}
+  .pc-amz-cb{display:flex;align-items:center;gap:2px;font-size:10px;color:#6b7db3}
+  .pc-fee-link{color:#5b8def;text-decoration:none;margin-right:10px}
+  .pc-fee-link:hover{text-decoration:underline}
+  .profit-multi-results{display:flex;flex-direction:column;gap:14px}
+  .profit-no-platform{text-align:center;color:#6b7db3;padding:60px 20px;font-size:14px}
+  .profit-plat-card{background:#101536;border:1px solid #1c2460;border-radius:12px;overflow:hidden}
+  .profit-plat-header{padding:14px 16px;background:rgba(91,141,239,0.06);border-bottom:1px solid #1c2460;display:flex;justify-content:space-between;align-items:center}
+  .profit-plat-name{font-size:14px;font-weight:700;color:#eef1ff}
+  .profit-plat-profit{text-align:right}
+  .profit-plat-profit-val{font-size:20px;font-weight:800;color:#eef1ff}
+  .profit-plat-profit-rate{font-size:11px;margin-top:2px}
+  .profit-plat-rate-good{color:#51cf66}
+  .profit-plat-rate-bad{color:#ff6b6b}
+  .profit-plat-body{padding:12px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .profit-plat-item{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
+  .profit-plat-item-label{font-size:11px;color:#6b7db3}
+  .profit-plat-item-value{font-size:12px;color:#c9d1e8;font-weight:600}
+  .profit-plat-flags{padding:8px 16px;display:flex;gap:6px}
+  .pr-badge{font-size:10px;padding:2px 8px;border-radius:4px;font-weight:600}
+  .pr-badge.ok{background:rgba(81,207,102,0.12);color:#51cf66}
+  .pr-badge.warn{background:rgba(255,169,77,0.12);color:#ffa94d}
+  .pr-badge.danger{background:rgba(255,107,107,0.12);color:#ff6b6b}
+  @media(max-width:900px){.profit-modal-body{flex-direction:column}.profit-left,.profit-right{width:100%}.profit-left{border-right:none;border-bottom:1px solid #1c2460}}
+
+  /* ===== FAB Buttons ===== */
+  .fab-group{position:fixed;bottom:28px;right:28px;display:flex;flex-direction:column;gap:12px;z-index:200}
+  .fab-btn{width:52px;height:52px;border-radius:16px;border:1px solid #1c2460;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:all .3s;box-shadow:0 4px 20px rgba(0,0,0,0.3)}
+  .fab-btn:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,0.4)}
+  .fab-profit{background:linear-gradient(135deg,#101536,#141a42);color:#5b8def}
+  .fab-profit:hover{border-color:#5b8def}
+  .fab-toolbox{background:linear-gradient(135deg,#1a1510,#2a2015);color:#E07628}
+  .fab-toolbox:hover{border-color:#E07628}
+/* ===== Toolbox Modal ===== */
+.tb-ov{position:fixed;inset:0;background:rgba(30,41,59,0.35);backdrop-filter:blur(3px);z-index:500;display:none;align-items:center;justify-content:center}
+.tb-ov.show{display:flex}
+.tb-win{width:96vw;max-width:580px;height:92vh;max-height:900px;background:#F7F5F0;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.2)}
+.tb-hdr{padding:14px 20px;background:#fff;border-bottom:1px solid #E5E0D8;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.tb-hdr h2{font-size:17px;font-weight:800;color:#2B3A4A;margin:0}
+.tb-hdr h2 em{color:#E07628;font-style:normal}
+.tb-xb{width:36px;height:36px;border-radius:10px;border:1px solid #E5E0D8;background:#F7F5F0;color:#7B8B9A;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.tb-xb:hover{border-color:#E07628;color:#E07628;background:#FFF3EB}
+.tb-bd{flex:1;overflow-y:auto;padding:12px;-webkit-overflow-scrolling:touch;--bg:#F7F5F0;--card:#FFFFFF;--primary:#E07628;--primary-light:#FFF3EB;--accent:#2A8FC1;--accent-light:#EAF4FB;--green:#23A05B;--green-light:#E6F7EE;--red:#E04B4B;--red-light:#FDEBEB;--purple:#8E44C8;--purple-light:#F1E9FA;--gold:#D4A017;--gold-light:#FDF6E3;--text:#2B3A4A;--text2:#7B8B9A;--border:#E5E0D8;--shadow:0 2px 14px rgba(0,0,0,0.055);--shadow2:0 4px 24px rgba(0,0,0,0.09);--radius:16px;--font:'Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif;--font2:'DM Sans','Noto Sans SC',sans-serif;font-family:var(--font);color:var(--text);background:#F7F5F0}
+.tb-bd .app{max-width:100%;margin:0}
+.tb-bd .title{display:none}
+.tb-btn{width:40px;height:40px;border:1px solid var(--border-color);border-radius:10px;background:var(--bg-primary);color:#E07628;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .3s}
+.tb-btn:hover{border-color:#E07628;background:#FFF3EB;box-shadow:var(--shadow-sm)}
+
+
+
+
+
+.app { max-width: 540px; margin: 0 auto; }
+.title { text-align: center; padding: 12px 0 14px; }
+.title h1 { font-size: 26px; font-weight: 900; letter-spacing: -0.5px; }
+.title h1 em { color: var(--primary); font-style: normal; }
+.title p { font-size: 12px; color: var(--text2); margin-top: 3px; letter-spacing: 1px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 5px; padding: 5px; background: var(--bg); border-radius: 14px; margin-bottom: 16px; border: 1.5px solid var(--border); }
+.tab-btn {
+  flex: 1; padding: 10px 4px; border: none; border-radius: 11px; cursor: pointer;
+  background: transparent; color: var(--text2); font-weight: 600; font-size: 13px;
+  font-family: var(--font); transition: all .2s; display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.tab-btn.active { background: var(--card); color: var(--primary); box-shadow: var(--shadow); font-weight: 800; }
+.tab-btn span.icon { font-size: 20px; }
+
+/* Cards */
+.card { background: var(--card); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin-bottom: 12px; }
+
+/* Pills */
+.pills { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 16px; }
+.pill {
+  padding: 6px 15px; border-radius: 20px; border: none; cursor: pointer; font-size: 12px;
+  font-weight: 700; font-family: var(--font); transition: all .18s;
+}
+.pill.on { background: var(--primary); color: #fff; }
+.pill.off { background: var(--primary-light); color: var(--primary); }
+
+/* Inputs */
+.input-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.num-input {
+  flex: 1; min-width: 100px; padding: 13px 15px; border: 2px solid var(--border); border-radius: 13px;
+  font-size: 20px; font-weight: 700; color: var(--text); outline: none; background: var(--bg);
+  font-family: var(--font2); transition: border-color .2s;
+}
+.num-input:focus { border-color: var(--primary); }
+.unit-select {
+  padding: 13px 10px; border-radius: 13px; border: 2px solid var(--border); font-size: 13px;
+  color: var(--text); background: var(--bg); cursor: pointer; font-family: var(--font);
+  font-weight: 600; min-width: 115px; -webkit-appearance: none; appearance: none;
+}
+.result-box {
+  flex: 1; min-width: 100px; padding: 13px 15px; border: 2px solid var(--primary); border-radius: 13px;
+  font-size: 20px; font-weight: 700; color: var(--primary); background: var(--primary-light);
+  font-family: var(--font2); word-break: break-all; min-height: 28px;
+}
+.result-box.blue { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+.swap-btn {
+  width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--border); background: var(--card);
+  cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
+  margin: 2px auto; transition: all .2s; box-shadow: var(--shadow);
+}
+.swap-btn:hover { background: var(--primary-light); border-color: var(--primary); }
+.label { font-size: 11px; color: var(--text2); font-weight: 700; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+
+/* Calendar */
+.cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.cal-title { font-size: 20px; font-weight: 900; font-family: var(--font2); }
+.cal-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.cal-nav { display: flex; gap: 6px; align-items: center; }
+.cal-nav-btn {
+  width: 34px; height: 34px; border-radius: 10px; border: 2px solid var(--border); background: var(--card);
+  cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: all .15s;
+}
+.cal-nav-btn:hover { background: var(--primary-light); border-color: var(--primary); }
+.today-btn {
+  padding: 7px 14px; border-radius: 10px; border: 2px solid var(--green); background: var(--green-light);
+  color: var(--green); font-weight: 800; cursor: pointer; font-size: 12px; font-family: var(--font);
+}
+.wk-row { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; margin: 12px 0 4px; }
+.wk-cell { text-align: center; font-size: 11px; font-weight: 800; color: var(--text2); padding: 5px 0; }
+.wk-cell.wkend { color: var(--red); }
+.day-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.day-cell {
+  aspect-ratio: 1; border: none; border-radius: 11px; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; position: relative; transition: all .12s; padding: 1px;
+  font-family: var(--font2); background: transparent;
+}
+.day-cell:active { transform: scale(.94); }
+.day-cell .dn { font-size: 14px; font-weight: 600; line-height: 1.2; }
+.day-cell .lunar { font-size: 7.5px; color: var(--text2); margin-top: 0; font-family: var(--font); }
+.day-cell.today .dn { color: #fff; font-weight: 900; }
+.day-cell.today { background: var(--primary); }
+.day-cell.today .lunar { color: rgba(255,255,255,.75); }
+.day-cell.selected { background: var(--primary-light); }
+.day-cell.selected .dn { color: var(--primary); font-weight: 800; }
+.day-cell.other .dn { color: #ccc; }
+.day-cell.other .lunar { display: none; }
+.day-cell .badge {
+  position: absolute; top: 1px; right: 3px; font-size: 7px; font-weight: 900;
+  font-family: var(--font);
+}
+.day-cell .badge-l { position: absolute; top: 1px; left: 3px; font-size: 7px; font-weight: 900; }
+.yi-ji-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.yi-box { border-radius: 13px; padding: 13px; }
+.yi-box.yi { background: var(--green-light); }
+.yi-box.ji { background: var(--red-light); }
+.yi-box .yi-title { font-size: 12px; font-weight: 900; margin-bottom: 7px; }
+.yi-box.yi .yi-title { color: var(--green); }
+.yi-box.ji .yi-title { color: var(--red); }
+.yi-tag {
+  display: inline-block; padding: 3px 9px; border-radius: 7px; font-size: 11px; font-weight: 700;
+  margin: 2px 3px 2px 0; font-family: var(--font);
+}
+.yi-box.yi .yi-tag { background: rgba(35,160,91,.13); color: var(--green); }
+.yi-box.ji .yi-tag { background: rgba(224,75,75,.13); color: var(--red); }
+
+/* detail items */
+.detail-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.detail-icon {
+  width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center;
+  font-size: 19px; font-weight: 900; font-family: var(--font2);
+}
+.detail-main { font-size: 15px; font-weight: 700; }
+.detail-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
+.detail-badge {
+  display: inline-block; margin-left: 7px; padding: 2px 10px; border-radius: 8px; font-size: 11px; font-weight: 800;
+}
+.festival-list { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+.fest-tag { padding: 3px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; }
+
+/* Rates grid */
+.rates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(145px,1fr)); gap: 7px; margin-top: 12px; }
+.rate-card {
+  background: var(--card); border-radius: 13px; padding: 10px 12px; box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 8px;
+}
+.rate-card .flag { font-size: 19px; }
+.rate-card .rname { font-size: 10px; color: var(--text2); }
+.rate-card .rval { font-size: 14px; font-weight: 800; font-family: var(--font2); }
+.rate-info {
+  margin-top: 16px; padding: 12px 16px; background: var(--bg); border-radius: 13px;
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;
+}
+.rate-info .rate-eq { font-size: 14px; font-weight: 800; font-family: var(--font2); }
+.rate-info .rate-time { font-size: 11px; color: var(--text2); }
+
+/* Calculator */
+.calc-display {
+  background: var(--bg); border-radius: 15px; padding: 14px 18px; margin-bottom: 14px;
+  text-align: right; min-height: 72px; display: flex; flex-direction: column; justify-content: flex-end;
+}
+.calc-prev { font-size: 13px; color: var(--text2); font-family: var(--font2); margin-bottom: 3px; }
+.calc-val { font-size: 34px; font-weight: 900; font-family: var(--font2); word-break: break-all; line-height: 1.15; }
+.calc-grid { display: grid; gap: 7px; }
+.calc-grid.basic { grid-template-columns: repeat(4,1fr); }
+.calc-grid.sci { grid-template-columns: repeat(5,1fr); margin-bottom: 7px; }
+.calc-btn {
+  padding: 15px 6px; border: none; border-radius: 13px; cursor: pointer; font-size: 17px;
+  font-weight: 700; font-family: var(--font2); transition: all .08s; display: flex;
+  align-items: center; justify-content: center;
+}
+.calc-btn:active { transform: scale(.93); }
+.calc-btn.num { background: var(--bg); color: var(--text); }
+.calc-btn.op { background: var(--primary-light); color: var(--primary); font-weight: 900; }
+.calc-btn.eq { background: var(--primary); color: #fff; font-weight: 900; }
+.calc-btn.fn { background: var(--red-light); color: var(--red); font-weight: 800; }
+.calc-btn.sci-fn { background: var(--purple-light); color: var(--purple); font-weight: 800; font-size: 13px; }
+.mode-pills { display: flex; gap: 7px; margin-bottom: 12px; }
+.mode-pill {
+  padding: 7px 18px; border-radius: 11px; border: none; cursor: pointer; font-size: 13px;
+  font-weight: 800; font-family: var(--font); transition: all .18s;
+}
+.mode-pill.on { background: var(--primary); color: #fff; }
+.mode-pill.off { background: var(--primary-light); color: var(--primary); }
+.history-box { margin-top: 10px; }
+.history-box .h-title { font-size: 11px; color: var(--text2); font-weight: 800; margin-bottom: 6px; }
+.history-box .h-item {
+  padding: 5px 0; font-size: 12px; font-family: var(--font2); border-bottom: 1px solid var(--border);
+}
+.history-box .h-item:last-child { border-bottom: none; }
+.history-box .h-item.latest { color: var(--text); font-weight: 700; }
+
+/* Loading */
+.loading { text-align: center; padding: 50px 20px; color: var(--text2); }
+.loading .spin { font-size: 36px; display: inline-block; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity:0; transform: translateY(6px); } to { opacity:1; transform: translateY(0); } }
+.panel { animation: fadeIn .25s ease; }
+
+/* Solar term badge */
+.solar-badge { color: var(--gold); }
+
+/* Hide section */
+.hidden { display: none !important; }
+
+/* Currency searchable picker */
+.cur-picker-wrap { position: relative; min-width: 140px; }
+.cur-picker-btn {
+  width: 100%; padding: 13px 10px; border-radius: 13px; border: 2px solid var(--border);
+  font-size: 13px; color: var(--text); background: var(--bg); cursor: pointer;
+  font-family: var(--font); font-weight: 600; text-align: left; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; transition: border-color .2s;
+}
+.cur-picker-btn:hover { border-color: var(--accent); }
+.cur-dropdown {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 100;
+  background: var(--card); border-radius: 14px; box-shadow: var(--shadow2);
+  border: 1.5px solid var(--border); overflow: hidden; min-width: 220px;
+}
+.cur-search {
+  width: 100%; padding: 11px 14px; border: none; border-bottom: 1.5px solid var(--border);
+  font-size: 13px; color: var(--text); outline: none; background: var(--bg);
+  font-family: var(--font); font-weight: 500;
+}
+.cur-search::placeholder { color: var(--text2); }
+.cur-list { max-height: 220px; overflow-y: auto; padding: 4px; }
+.cur-item {
+  display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 10px;
+  border: none; background: transparent; cursor: pointer; border-radius: 10px;
+  font-family: var(--font); font-size: 13px; color: var(--text); text-align: left;
+  transition: background .12s;
+}
+.cur-item:hover { background: var(--accent-light); }
+.cur-item.active { background: var(--accent-light); font-weight: 800; color: var(--accent); }
+.cur-item-code { font-weight: 800; font-family: var(--font2); min-width: 34px; }
+.cur-item-name { color: var(--text2); font-size: 12px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+/* number input arrows */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+
+@media(max-width:400px) {
+  .app { padding: 0; }
+  .card { padding: 14px; border-radius: 14px; }
+  .cal-title { font-size: 17px; }
+  .calc-val { font-size: 28px; }
+  .num-input { font-size: 17px; }
+  .result-box { font-size: 17px; }
+}
+/* BOM Module */
+.bom-label { font-size:11px; font-weight:600; color:var(--text2); margin-bottom:3px; letter-spacing:.3px; }
+.bom-inp {
+  padding:7px 10px; border:1.5px solid var(--border); border-radius:8px; font-size:13px;
+  color:var(--text); outline:none; font-family:var(--font); background:#FAFAF8; transition:border-color .2s;
+}
+.bom-inp:focus { border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-light); }
+.bom-inp.full { width:100%; }
+.bom-sel {
+  width:100%; padding:7px 28px 7px 10px; border:1.5px solid var(--border); border-radius:8px;
+  font-size:12px; color:var(--text); background:#FAFAF8 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237B8B9A'/%3E%3C/svg%3E") no-repeat right 10px center;
+  -webkit-appearance:none; appearance:none; cursor:pointer; font-family:var(--font); outline:none;
+}
+.bom-sel:focus { border-color:var(--primary); }
+.bom-btn {
+  padding:8px 16px; border:none; border-radius:8px; font-size:13px; font-weight:600;
+  cursor:pointer; font-family:var(--font); transition:all .15s;
+}
+.bom-btn:active { transform:scale(.96); }
+.bom-btn.primary { background:var(--primary); color:#fff; }
+.bom-btn.small { padding:4px 8px; font-size:11px; }
+.bom-btn.small.accent { background:var(--accent-light); color:var(--accent); }
+.bom-btn.small.red { background:var(--red-light); color:var(--red); }
+.bom-btn.add {
+  flex:1; min-width:90px; padding:8px; background:var(--card); color:var(--text);
+  border:1.5px dashed var(--border); font-size:12px; border-radius:8px;
+}
+.bom-btn.add:hover { border-color:var(--primary); color:var(--primary); }
+.bom-row { display:flex; gap:8px; margin-bottom:6px; flex-wrap:wrap; align-items:flex-start; }
+.bom-field { flex:1; min-width:0; }
+.bom-tabs {
+  display:flex; gap:4px; padding:4px; background:var(--card); border-radius:12px;
+  margin-bottom:12px; border:1.5px solid var(--border);
+}
+.bom-tab {
+  flex:1; padding:10px 8px; border:none; border-radius:10px; font-size:13px; font-weight:700;
+  cursor:pointer; background:transparent; color:var(--text2); font-family:var(--font); transition:all .2s;
+}
+.bom-tab.active { background:var(--primary); color:#fff; }
+.bom-idx {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:26px; height:26px; border-radius:8px; background:var(--primary);
+  color:#fff; font-size:12px; font-weight:800;
+}
+.bom-section-hdr {
+  display:flex; align-items:center; gap:8px; margin-bottom:8px; font-size:13px; color:var(--text);
+}
+.bom-badge {
+  display:inline-block; padding:2px 8px; border-radius:6px; font-size:11px; font-weight:700;
+  color:var(--primary); background:var(--primary-light);
+}
+.bom-result-bar {
+  margin-top:12px; padding:10px 14px; border-radius:10px;
+  background:linear-gradient(135deg,var(--primary-light),var(--gold-light));
+  display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;
+}
+.bom-mini { text-align:center; min-width:55px; }
+.bom-mini-l { font-size:10px; color:var(--text2); margin-bottom:2px; }
+.bom-mini-v { font-size:13px; font-weight:600; font-family:var(--font2); }
+.bom-mini-v.bom-bold { font-size:15px; font-weight:800; }
+.bom-total-bar {
+  padding:14px 18px; border-radius:14px; cursor:pointer;
+  background:linear-gradient(135deg,var(--primary),#C85A10);
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;
+}
+.bom-dropdown {
+  position:absolute; top:38px; right:0; z-index:10; background:var(--card);
+  border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,.15); border:1px solid var(--border);
+  min-width:160px; overflow:hidden;
+}
+.bom-dropdown.hidden { display:none; }
+.bom-dd-item { padding:10px 16px; font-size:13px; cursor:pointer; border-bottom:1px solid var(--border); }
+.bom-dd-item:hover { background:var(--primary-light); }
+.bom-dd-item:last-child { border-bottom:none; }
+.bom-fee-grid {
+  display:grid; grid-template-columns:1fr 1fr 1fr; gap:6px; margin-bottom:14px;
+  padding:10px; border-radius:10px; background:var(--accent-light); border:1px solid var(--border);
+}
+.bom-summary-row {
+  display:flex; justify-content:space-between; align-items:center; padding:8px 0;
+}
+.bom-summary-row.bordered { border-bottom:1px solid var(--border); }
+.bom-grand-total {
+  margin-top:12px; padding:14px; border-radius:12px;
+  background:linear-gradient(135deg,var(--primary),#C85A10);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.bom-split-box {
+  flex:1; padding:10px; border-radius:10px; text-align:center;
+}
+.bom-table { width:100%; border-collapse:collapse; font-size:11px; }
+.bom-table th {
+  padding:6px 4px; text-align:center; font-weight:700; color:var(--text);
+  border-bottom:2px solid var(--primary); background:var(--primary-light); white-space:nowrap;
+}
+.bom-table td { padding:5px 4px; text-align:center; border-bottom:1px solid var(--border); }
+.bom-bar-bg { width:100%; height:6px; border-radius:3px; background:var(--border); overflow:hidden; min-width:30px; }
+.bom-bar-fill { height:100%; border-radius:3px; background:var(--primary); }
+.bom-item-card { padding:14px 16px; }
+@media(max-width:480px){
+  .bom-row { gap:6px; }
+  .bom-fee-grid { grid-template-columns:1fr 1fr; }
+}
+
+
     <style>.belt-card:nth-child(${idx+1})::after{background:linear-gradient(90deg,transparent,${belt.color},transparent)}</style>
     <div class="belt-header">
       <div>
@@ -815,5 +1240,2542 @@ function renderResults(data, keyword) {
   resultsDiv.innerHTML = html;
 }
 </script>
+
+
+<!-- FAB Buttons -->
+<div class="fab-group">
+  <button class="fab-btn fab-profit" id="profitCalcToggle" title="利润测算">🧮</button>
+  <button class="fab-btn fab-toolbox" id="tbBtn" title="万能工具箱">🧰</button>
+</div>
+
+<!-- Profit Calculator Modal -->
+    <div class="profit-modal-overlay" id="profitModalOverlay">
+      <div class="profit-modal">
+        <div class="profit-modal-header">
+          <h2>利润测算工具</h2>
+          <button class="profit-modal-close" id="profitModalClose">✕</button>
+        </div>
+        <div class="profit-modal-body">
+          <div class="profit-left">
+            <!-- Group 1: Basic Info -->
+            <div class="profit-group">
+              <div class="profit-group-title">基础信息</div>
+              <div class="profit-group-content">
+                <div class="profit-field">
+                  <label>材质</label>
+                  <select id="pcMaterial"><option value="非钢铁铝">非钢铁铝</option><option value="钢铁铝">钢铁铝</option></select>
+                </div>
+                <div class="profit-field span3">
+                  <label>平台（多选）</label>
+                  <div class="pc-platform-grid" id="pcPlatformGrid">
+                    <label><input type="checkbox" value="DSV" checked>DSV <span class="pc-ot-tag">自提</span></label>
+                    <label><input type="checkbox" value="沃尔玛 MP">沃尔玛 MP <select class="pc-ot-sel" data-plat="沃尔玛 MP" onclick="event.stopPropagation()" onchange="calcAllProfits()"><option>一件代发</option><option>WFS</option></select></label>
+                    <label><input type="checkbox" value="target">Target <span class="pc-ot-tag">一件代发</span></label>
+                    <label><input type="checkbox" value="macy">Macy's <span class="pc-ot-tag">一件代发</span></label>
+                    <label><input type="checkbox" value="Bestbuy">Best Buy <span class="pc-ot-tag">一件代发</span></label>
+                    <label><input type="checkbox" value="Lowes">Lowe's <span class="pc-ot-tag">一件代发</span></label>
+                    <label><input type="checkbox" value="HD">Home Depot <span class="pc-ot-tag">一件代发</span></label>
+                    <label><input type="checkbox" value="Overstock">Overstock <span class="pc-ot-tag">一件代发</span></label>
+                    <label><input type="checkbox" value="Wayfair">Wayfair <span class="pc-ot-tag">一件代发</span></label>
+                    <label><input type="checkbox" value="豪雅Amazon VC">豪雅Amazon VC <span class="pc-ot-tag">VC</span></label>
+                    <label><input type="checkbox" value="DEMO VC DF">DEMO VC DF <span class="pc-ot-tag">VC</span></label>
+                    <label class="pc-amazon-group"><input type="checkbox" value="Amazon 北美">Amazon 北美
+                      <span class="pc-amz-checks" onclick="event.stopPropagation()">
+                        <label class="pc-amz-cb"><input type="checkbox" data-plat="Amazon 北美" data-ot="FBA" checked onchange="calcAllProfits()">FBA</label>
+                        <label class="pc-amz-cb"><input type="checkbox" data-plat="Amazon 北美" data-ot="FBM" checked onchange="calcAllProfits()">FBM</label>
+                      </span>
+                    </label>
+                    <label class="pc-amazon-group"><input type="checkbox" value="Amazon 欧洲">Amazon 欧洲
+                      <span class="pc-amz-checks" onclick="event.stopPropagation()">
+                        <label class="pc-amz-cb"><input type="checkbox" data-plat="Amazon 欧洲" data-ot="FBA" checked onchange="calcAllProfits()">FBA</label>
+                        <label class="pc-amz-cb"><input type="checkbox" data-plat="Amazon 欧洲" data-ot="FBM" checked onchange="calcAllProfits()">FBM</label>
+                      </span>
+                    </label>
+                    <label class="pc-amazon-group"><input type="checkbox" value="Amazon 日本">Amazon 日本
+                      <span class="pc-amz-checks" onclick="event.stopPropagation()">
+                        <label class="pc-amz-cb"><input type="checkbox" data-plat="Amazon 日本" data-ot="FBA" checked onchange="calcAllProfits()">FBA</label>
+                      </span>
+                    </label>
+                  </div>
+                  <div class="pc-plat-actions">
+                    <button type="button" onclick="pcSelectAllPlats()">全选</button>
+                    <button type="button" onclick="pcClearAllPlats()">清除</button>
+                    <button type="button" onclick="pcSelectUSPlats()">美国站</button>
+                  </div>
+                </div>
+                <div class="profit-field">
+                  <label>自营/分销</label>
+                  <select id="pcSalesType"><option value="自营">自营</option><option value="分销">分销</option></select>
+                </div>
+                <div class="profit-field" id="pcEuCountryField" style="display:none">
+                  <label>欧洲国家</label>
+                  <select id="pcEuCountry">
+                    <option value="DE">DE 德国</option><option value="UK">UK 英国</option>
+                    <option value="FR">FR 法国</option><option value="ES">ES 西班牙</option>
+                    <option value="IT">IT 意大利</option><option value="NL">NL 荷兰</option>
+                    <option value="SE">SE 瑞典</option><option value="AT">AT 奥地利</option>
+                    <option value="PL">PL 波兰</option><option value="BE">BE 比利时</option>
+                    <option value="DK">DK 丹麦</option><option value="LU">LU 卢森堡</option>
+                    <option value="EE">EE 爱沙尼亚</option><option value="PT">PT 葡萄牙</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <!-- Group 2: Product Specs -->
+            <div class="profit-group">
+              <div class="profit-group-title">产品规格</div>
+              <div class="profit-group-content">
+                <div class="profit-field">
+                  <label>外箱长(CM)</label>
+                  <input type="number" id="pcOuterL" placeholder="143" step="0.01">
+                </div>
+                <div class="profit-field">
+                  <label>外箱宽(CM)</label>
+                  <input type="number" id="pcOuterW" placeholder="39" step="0.01">
+                </div>
+                <div class="profit-field">
+                  <label>外箱高(CM)</label>
+                  <input type="number" id="pcOuterH" placeholder="13" step="0.01">
+                </div>
+                <div class="profit-field">
+                  <label>外箱毛重(KG)</label>
+                  <input type="number" id="pcOuterWeight" placeholder="25" step="0.01">
+                </div>
+                <div class="profit-field">
+                  <label>装箱量</label>
+                  <input type="number" id="pcPackQty" placeholder="2" step="1" min="1" value="1">
+                </div>
+                <div class="profit-field">
+                  <label>产品内盒毛重(KG)</label>
+                  <input type="number" id="pcInnerWeight" placeholder="12" step="0.01">
+                </div>
+                <div class="profit-field">
+                  <label>内盒长(CM)</label>
+                  <input type="number" id="pcInnerL" placeholder="70" step="0.01">
+                </div>
+                <div class="profit-field">
+                  <label>内盒宽(CM)</label>
+                  <input type="number" id="pcInnerW" placeholder="38" step="0.01">
+                </div>
+                <div class="profit-field">
+                  <label>内盒高(CM)</label>
+                  <input type="number" id="pcInnerH" placeholder="12" step="0.01">
+                </div>
+              </div>
+            </div>
+            <!-- Group 3: Price & Shipping -->
+            <div class="profit-group">
+              <div class="profit-group-title">价格与运费</div>
+              <div class="profit-group-content">
+                <div class="profit-field">
+                  <label>发货方式</label>
+                  <select id="pcShipMethod"><option value="散货">散货</option><option value="整柜">整柜</option></select>
+                </div>
+                <div class="profit-field">
+                  <label>不含税采购价(RMB)</label>
+                  <input type="number" id="pcCost" placeholder="200" step="0.01">
+                </div>
+                <div class="profit-field">
+                  <label>Price(原币)</label>
+                  <input type="number" id="pcPrice" placeholder="89.99" step="0.01">
+                </div>
+                <div class="profit-field">
+                  <label>运费收入(原币)</label>
+                  <input type="number" id="pcShipIncome" placeholder="0" step="0.01" value="0">
+                </div>
+                <div class="profit-field">
+                  <label>WFS/FBA尾程派送费(原币)</label>
+                  <input type="number" id="pcWfsFee" placeholder="0" step="0.01" value="0">
+                  <div class="pc-fee-links" id="pcFeeLinks" style="display:none;margin-top:4px;font-size:11px;">
+                    <a href="https://sellercentral.amazon.com/hz/fba/profitabilitycalculator/index?lang=en_US" target="_blank" rel="noopener" class="pc-fee-link" id="pcLinkFba" style="display:none">📦 FBA运费测算 →</a>
+                    <a href="https://marketplace.walmart.com/walmart-fulfillment-services-pricing/" target="_blank" rel="noopener" class="pc-fee-link" id="pcLinkWfs" style="display:none">🏬 WFS运费测算 →</a>
+                    <span style="color:var(--text-muted);display:block;margin-top:2px" id="pcFeeTip"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Group 4: Parameters (collapsible) -->
+            <div class="profit-group">
+              <div class="profit-group-title collapsible" id="pcParamsToggle">参数设置</div>
+              <div class="profit-group-content collapsed" id="pcParamsContent">
+                <div class="profit-field">
+                  <label>汇率</label>
+                  <input type="number" id="pcExRate" value="6.7684" step="0.0001">
+                </div>
+                <div class="profit-field">
+                  <label>整柜报价RMB(美国)</label>
+                  <input type="number" id="pcFclUs" value="60000" step="100">
+                </div>
+                <div class="profit-field">
+                  <label>整柜报价RMB(欧洲)</label>
+                  <input type="number" id="pcFclEu" value="50000" step="100">
+                </div>
+                <div class="profit-field">
+                  <label>整柜报价RMB(日本)</label>
+                  <input type="number" id="pcFclJp" value="32000" step="100">
+                </div>
+                <div class="profit-field">
+                  <label>散货报价(非钢铁铝)</label>
+                  <input type="number" id="pcLclNormal" value="12" step="0.1">
+                </div>
+                <div class="profit-field">
+                  <label>散货报价(钢铁铝)</label>
+                  <input type="number" id="pcLclSteel" value="14.5" step="0.1">
+                </div>
+                <div class="profit-field">
+                  <label>散货报价(欧洲)</label>
+                  <input type="number" id="pcLclEu" value="10" step="0.1">
+                </div>
+                <div class="profit-field">
+                  <label>散货报价(日本)</label>
+                  <input type="number" id="pcLclJp" value="630" step="1">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="profit-right">
+            <div class="profit-multi-results" id="profitResults">
+              <div class="profit-no-platform">请在左侧勾选平台并填写产品信息后查看测算结果</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="tb-ov" id="tbOv"><div class="tb-win"><div class="tb-hdr"><h2>🧰 <em>万能</em>工具箱</h2><button class="tb-xb" id="tbXb">✕</button></div>
+    <div class="tb-bd"><div class="app"><div class="tabs" id="_tbTabs"></div>
+    <div id="_tbP-unit" class="panel hidden"></div><div id="_tbP-currency" class="panel hidden"></div>
+    <div id="_tbP-calendar" class="panel hidden"></div><div id="_tbP-calc" class="panel hidden"></div>
+    <div id="_tbP-bom" class="panel hidden"></div></div></div></div></div>
+<script>
+// ===== Profit Calculator =====
+// ===== Platform quick-select helpers (global for onclick) =====
+function pcSelectAllPlats(){ document.querySelectorAll('#pcPlatformGrid input').forEach(function(c){c.checked=true}); calcAllProfits(); }
+function pcClearAllPlats(){ document.querySelectorAll('#pcPlatformGrid input').forEach(function(c){c.checked=false}); calcAllProfits(); }
+function pcSelectUSPlats(){ var us=['DSV','沃尔玛 MP','target','macy','Bestbuy','Lowes','HD','Overstock','Wayfair','豪雅Amazon VC','DEMO VC DF']; document.querySelectorAll('#pcPlatformGrid input').forEach(function(c){ if(c.value && us.indexOf(c.value)>=0) c.checked=true; else if(c.value) c.checked=false; }); calcAllProfits(); }
+
+(function(){
+  /* ===== Platform Fee Ratios (from Excel 平台费用占比) ===== */
+  const PLATFORM_FEES = {
+    "DSV|US":{commission:0.03,returnRate:0.077,adRate:0.09,rentRate:0.0225,vat:0,stdProfit:0.15,costRatio:1.3},
+    "沃尔玛 MP|US":{commission:0.15,returnRate:0.08,adRate:0.09,rentRate:0.0225,vat:0,stdProfit:0.15,costRatio:1},
+    "target|US":{commission:0.17,returnRate:0.15,adRate:0.05,rentRate:0.0225,vat:0,stdProfit:0.15,costRatio:1},
+    "macy|US":{commission:0.18,returnRate:0.1,adRate:0.025,rentRate:0.0225,vat:0,stdProfit:0.15,costRatio:1},
+    "Bestbuy|US":{commission:0.15,returnRate:0.1,adRate:0,rentRate:0,vat:0,stdProfit:0.12,costRatio:1},
+    "Lowes|US":{commission:0.15,returnRate:0.1,adRate:0,rentRate:0.0225,vat:0,stdProfit:0.15,costRatio:1},
+    "HD|US":{commission:0.02,returnRate:0.12,adRate:0,rentRate:0.0225,vat:0,stdProfit:0.15,costRatio:1.55},
+    "Overstock|US":{commission:0.14,returnRate:0.1,adRate:0,rentRate:0.0225,vat:0,stdProfit:0.15,costRatio:1.55},
+    "Wayfair|US":{commission:0.12,returnRate:0.08,adRate:0.03,rentRate:0.0225,vat:0,stdProfit:0.15,costRatio:1.55},
+    "豪雅Amazon VC|US":{commission:0.16,returnRate:0.06,adRate:0.1,rentRate:0.0225,vat:0,stdProfit:0.15,costRatio:1.43},
+    "DEMO VC DF|US":{commission:0.175,returnRate:0,adRate:0.1,rentRate:0.0225,vat:0,stdProfit:0.15,costRatio:1.1765},
+    "Amazon 北美|US":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0,stdProfit:0.12,costRatio:1},
+    "Amazon 北美|CA":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0,stdProfit:0.12,costRatio:1},
+    "Amazon 北美|MX":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0,stdProfit:0.12,costRatio:1},
+    "Amazon 欧洲|UK":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.20,stdProfit:0.15},
+    "Amazon 欧洲|DE":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.19,stdProfit:0.15},
+    "Amazon 欧洲|FR":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.20,stdProfit:0.15},
+    "Amazon 欧洲|ES":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.21,stdProfit:0.15},
+    "Amazon 欧洲|IT":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.22,stdProfit:0.15},
+    "Amazon 欧洲|NL":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.21,stdProfit:0.15},
+    "Amazon 欧洲|SE":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.25,stdProfit:0.15},
+    "Amazon 欧洲|AT":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.20,stdProfit:0.15},
+    "Amazon 欧洲|PL":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.23,stdProfit:0.15},
+    "Amazon 欧洲|BE":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.21,stdProfit:0.15},
+    "Amazon 欧洲|DK":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.25,stdProfit:0.15},
+    "Amazon 欧洲|LU":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.17,stdProfit:0.15},
+    "Amazon 欧洲|EE":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.22,stdProfit:0.15},
+    "Amazon 欧洲|PT":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0.23,stdProfit:0.15},
+    "Amazon 日本|JP":{commission:0.15,returnRate:0.08,adRate:0.1,rentRate:0.0225,vat:0,stdProfit:0.15}
+  };
+
+  /* Exchange rates per country_currency (from Excel) */
+  const COUNTRY_EX_RATES = {
+    "US_USD":6.7684,"CA_CAD":4.9181,"MX_MXN":0.376,
+    "UK_GBP":9.0455,"DE_EUR":7.9413,"FR_EUR":7.9413,"ES_EUR":7.9413,
+    "IT_EUR":7.9413,"NL_EUR":7.9413,"AT_EUR":7.9413,"BE_EUR":7.9413,
+    "LU_EUR":7.9413,"EE_EUR":7.9413,"PT_EUR":7.9413,
+    "SE_SEK":0.727392,"PL_PLN":1.884576,"DK_DKK":1.063392,
+    "JP_JPY":0.0437
+  };
+  /* DSV/target/macy/DEMO VC DF use a different base rate */
+  const SPECIAL_EX_RATE_PLATS = ["DSV","target","macy","DEMO VC DF"];
+
+  /* 快仓美国5区基础运费表 (LB -> USD) — VLOOKUP(AM, A:C, 3, 0) exact match
+     Verified: 40LB=11.209 from Excel data. Rates are 3PL contract prices, NOT retail FedEx. */
+  const FEDEX_RATES = [
+    {max:1,rate:3.5},{max:2,rate:3.8},{max:3,rate:4.1},{max:5,rate:4.5},{max:7,rate:5.0},
+    {max:10,rate:5.5},{max:13,rate:6.0},{max:16,rate:6.5},{max:20,rate:7.2},
+    {max:25,rate:8.0},{max:30,rate:9.0},{max:35,rate:10.1},{max:40,rate:11.209},
+    {max:45,rate:12.3},{max:50,rate:13.5},{max:55,rate:15.5},{max:60,rate:17.5},
+    {max:65,rate:19.5},{max:70,rate:22.0},{max:80,rate:26.0},{max:90,rate:30.5},
+    {max:100,rate:35.0},{max:110,rate:40.0},{max:120,rate:45.0},{max:130,rate:50.0},
+    {max:140,rate:55.0},{max:150,rate:60.0}
+  ];
+  function getFedExRate(lb){ for(var i=0;i<FEDEX_RATES.length;i++){if(lb<=FEDEX_RATES[i].max)return FEDEX_RATES[i].rate;} return 60+(lb-150)*0.45; }
+
+  /* Self-pickup fee table (from Excel 快仓美国5区 col S) */
+  /* Self-pickup fee (BN) — VLOOKUP(AL, P:S, col4, TRUE) approximate match
+     P column breakpoints: 1,2,3,5,7,10,13,16,20,25,30,35,40,45,50,55,60,65,70,80,90,100,110,120,130,140,150
+     col4 values derived from data: 22LB→3.5, 31LB→4.5 */
+  var PICKUP_TABLE=[[1,2],[2,2.2],[3,2.4],[5,2.6],[7,2.8],[10,3],[13,3.2],[16,3.4],[20,3.5],[25,4],[30,4.5],[35,5],[40,5.5],[45,6],[50,6.5],[55,7],[60,7.5],[65,8],[70,8.5],[80,9.5],[90,10.5],[100,11.5],[110,12.5],[120,13.5],[130,14.5],[140,15.5],[150,16.5]];
+  function getSelfPickupFee(lb){ var v=PICKUP_TABLE[0][1]; for(var i=0;i<PICKUP_TABLE.length;i++){if(lb>=PICKUP_TABLE[i][0])v=PICKUP_TABLE[i][1];else break;} return v; }
+  /* Dropship op fee (BL) — VLOOKUP(AL, P:S, col2, TRUE)
+     col2 values derived from data: 22LB→1.8, 31LB→2.5 */
+  var DROPSHIP_TABLE=[[1,0.8],[2,0.9],[3,1],[5,1.1],[7,1.2],[10,1.4],[13,1.5],[16,1.6],[20,1.8],[25,2.2],[30,2.5],[35,2.8],[40,3.2],[45,3.5],[50,3.8],[55,4.2],[60,4.5],[65,4.8],[70,5.2],[80,6],[90,7],[100,8],[110,9],[120,10],[130,11],[140,12],[150,13]];
+  function getDropshipOpFee(lb){ var v=DROPSHIP_TABLE[0][1]; for(var i=0;i<DROPSHIP_TABLE.length;i++){if(lb>=DROPSHIP_TABLE[i][0])v=DROPSHIP_TABLE[i][1];else break;} return v; }
+
+  const PLATFORM_COUNTRIES = {
+    "DSV":["US"],"沃尔玛 MP":["US"],"target":["US"],"macy":["US"],
+    "Bestbuy":["US"],"Lowes":["US"],"HD":["US"],"Overstock":["US"],"Wayfair":["US"],
+    "豪雅Amazon VC":["US"],"DEMO VC DF":["US"],
+    "Amazon 北美":["US","CA","MX"],
+    "Amazon 欧洲":["UK","DE","FR","ES","IT","NL","SE","AT","PL","BE","DK","LU","EE","PT"],
+    "Amazon 日本":["JP"]
+  };
+  const COUNTRY_CURRENCY = {
+    "US":"USD","CA":"CAD","MX":"MXN","UK":"GBP","DE":"EUR","FR":"EUR",
+    "ES":"EUR","IT":"EUR","NL":"EUR","SE":"SEK","AT":"EUR","PL":"PLN",
+    "BE":"EUR","DK":"DKK","LU":"EUR","EE":"EUR","PT":"EUR","JP":"JPY"
+  };
+
+  /* Default order types */
+  var PLATFORM_ORDER_DEFAULTS = {
+    "DSV":"自提","target":"一件代发","macy":"一件代发","Bestbuy":"一件代发",
+    "Lowes":"一件代发","HD":"自提","Overstock":"自提","Wayfair":"自提",
+    "豪雅Amazon VC":"VC","DEMO VC DF":"VC"
+  };
+
+  function $(id){ return document.getElementById(id); }
+  function val(id){ var v=parseFloat($(id).value); return isNaN(v)?0:v; }
+  function sel(id){ return $(id).value; }
+
+  function openProfitModal(){ $('profitModalOverlay').classList.add('active'); calcAllProfits(); }
+  function closeProfitModal(){ $('profitModalOverlay').classList.remove('active'); }
+
+  function getSelectedPlatforms(){
+    var checked=[];
+    document.querySelectorAll('#pcPlatformGrid > label > input:checked, #pcPlatformGrid > label.pc-amazon-group > input:checked').forEach(function(c){
+      if(c.value) checked.push(c.value);
+    });
+    return checked;
+  }
+  function getAmazonOrderTypes(platform){
+    var types=[];
+    document.querySelectorAll('.pc-amz-cb input[data-plat="'+platform+'"]:checked').forEach(function(cb){ types.push(cb.getAttribute('data-ot')); });
+    return types.length>0?types:['FBA'];
+  }
+  function updateEuField(){
+    var plats=getSelectedPlatforms();
+    $('pcEuCountryField').style.display = plats.indexOf('Amazon 欧洲')>=0 ? '' : 'none';
+  }
+  function getOrderTypeForPlatform(platform){
+    var subSel=document.querySelector('.pc-ot-sel[data-plat="'+platform+'"]');
+    if(subSel) return subSel.value;
+    return PLATFORM_ORDER_DEFAULTS[platform]||'一件代发';
+  }
+
+  /* ===== Shipping mode logic (Excel col F formula) ===== */
+  function getShippingMode(platform,orderType,salesType){
+    if(orderType==='VC'||orderType==='自提') return '海外仓自提';
+    if(salesType==='分销') return '分销发货';
+    if(orderType==='FBA'||orderType==='WFS') return '平台仓发';
+    if(platform==='Amazon 欧洲'&&orderType==='FBM') return '欧洲发货';
+    if(orderType==='FBM') return '美国发货';
+    if(orderType==='一件代发') return '美国发货';
+    return '海外仓自提';
+  }
+
+  /* ===== Show/hide FBA & WFS calculator links ===== */
+  function updateFeeLinks(){
+    var plats=getSelectedPlatforms();
+    var hasFBA=false, hasWFS=false;
+    plats.forEach(function(p){
+      if(p==='Amazon 北美'||p==='Amazon 欧洲'||p==='Amazon 日本'){
+        getAmazonOrderTypes(p).forEach(function(ot){ if(ot==='FBA') hasFBA=true; });
+      }
+      if(p==='沃尔玛 MP' && getOrderTypeForPlatform(p)==='WFS') hasWFS=true;
+    });
+    var show=hasFBA||hasWFS;
+    $('pcFeeLinks').style.display=show?'':'none';
+    $('pcLinkFba').style.display=hasFBA?'inline-block':'none';
+    $('pcLinkWfs').style.display=hasWFS?'inline-block':'none';
+    $('pcFeeTip').textContent=show?'请通过上方链接查询FBA/WFS派送费后填入':'';
+  }
+
+  /* ===== Core Profit Calculator (matches Excel A:CR columns exactly) ===== */
+  function calcForPlatform(platform, orderTypeOverride){
+    var material=sel('pcMaterial');
+    var orderType=orderTypeOverride||getOrderTypeForPlatform(platform);
+    var salesType=sel('pcSalesType');
+    var shipMethod=sel('pcShipMethod');
+    var distributor=''; // simplified; needed for 退货退款
+
+    // Country & currency
+    var country;
+    if(platform==='Amazon 欧洲') country=sel('pcEuCountry')||'DE';
+    else if(platform==='Amazon 日本') country='JP';
+    else if(platform==='Amazon 北美') country='US';
+    else country='US';
+    var currency=COUNTRY_CURRENCY[country]||'USD';
+
+    // Exchange rate (col I)
+    // USD platforms all use the user-entered rate; other currencies use preset rates
+    var exRate;
+    var userRate=val('pcExRate')||6.7684;
+    if(currency==='USD'){
+      exRate=userRate;
+    } else {
+      var rateKey=country+'_'+currency;
+      if(COUNTRY_EX_RATES[rateKey]) exRate=COUNTRY_EX_RATES[rateKey];
+      else exRate=userRate;
+    }
+
+    // Product specs
+    var outerL=val('pcOuterL'),outerW=val('pcOuterW'),outerH=val('pcOuterH');
+    var outerWeight=val('pcOuterWeight');
+    var packQty=val('pcPackQty')||1;
+    var innerWeight=val('pcInnerWeight');
+    var innerL=val('pcInnerL'),innerW=val('pcInnerW'),innerH=val('pcInnerH');
+    var cost=val('pcCost');    // U: 不含税采购价(RMB)
+    var price=val('pcPrice');  // V: Price(原币)
+    var shipIncome=val('pcShipIncome'); // W: 运费收入(原币)
+    var wfsFbaFee=val('pcWfsFee'); // AA: WFS/FBA尾程派送费(原币) — from external calculator
+
+    // Shipping mode (col F)
+    var shippingMode=getShippingMode(platform,orderType,salesType);
+
+    // Ship method follows user selection (col T) — NO override for 平台仓发
+    var effectiveShipMethod=shipMethod;
+
+    // Tariff rate (col J)
+    var tariffRate;
+    if(platform.indexOf('Amazon 欧洲')>=0) tariffRate=0;
+    else if(platform==='Amazon 日本') tariffRate=0.13;
+    else tariffRate=(material==='钢铁铝')?0.8547:0.4547;
+
+    // CBM of outer box (col AB)
+    var cbm=outerL*outerW*outerH/1000000;
+
+    // Scatter price (col S)
+    var scatterPrice;
+    if(platform==='Amazon 日本') scatterPrice=val('pcLclJp');
+    else if(platform.indexOf('Amazon 欧洲')>=0) scatterPrice=val('pcLclEu');
+    else scatterPrice=(material==='钢铁铝')?val('pcLclSteel'):val('pcLclNormal');
+
+    // FCL price (col R)
+    var fclPrice;
+    if(platform==='Amazon 日本') fclPrice=val('pcFclJp');
+    else if(platform.indexOf('Amazon 欧洲')>=0) fclPrice=val('pcFclEu');
+    else fclPrice=val('pcFclUs');
+
+    // 计费重 KG/CBM (col AE)
+    var chargeWeightKG;
+    if(platform==='Amazon 日本') chargeWeightKG=Math.max(outerWeight/300,cbm);
+    else chargeWeightKG=Math.max(Math.ceil(cbm*167),Math.ceil(outerWeight));
+
+    // 产品清关价 RMB (col AC)
+    var clearancePrice=0;
+    if(salesType!=='分销'){
+      if(effectiveShipMethod==='整柜'&&platform==='Amazon 日本') clearancePrice=price*0.25*exRate;
+      else if(effectiveShipMethod==='整柜') clearancePrice=Math.min(8000*exRate/66*cbm/packQty, cost*0.48);
+    }
+
+    // 散货头程费用 RMB (col AD) = chargeWeightKG * scatterPrice / packQty
+    var scatterFreightRmb=0;
+    if(salesType!=='分销') scatterFreightRmb=chargeWeightKG*scatterPrice/packQty;
+
+    // 含关税整柜头程费用 RMB (col AF) = fclPrice/66*cbm/packQty + clearancePrice*tariffRate
+    var fclFreightRmb=0;
+    if(salesType!=='分销') fclFreightRmb=fclPrice/66*cbm/packQty + clearancePrice*tariffRate;
+
+    // 头程费用 RMB (col BZ) = IF(整柜, AF, AD)
+    var freightRmb=(effectiveShipMethod==='整柜')?fclFreightRmb:scatterFreightRmb;
+
+    // Inner box → inches (cols AG-AI)
+    var lenInch=Math.ceil(innerL*0.3937),widInch=Math.ceil(innerW*0.3937),hgtInch=Math.ceil(innerH*0.3937);
+    // 材重 LB (col AJ)
+    var dimWeightLB=Math.ceil(lenInch*widInch*hgtInch/250);
+    // 实重 LB (col AK)
+    var actualWeightLB=Math.ceil(innerWeight*2.20462);
+    // 计费重 LB 自提 (col AL) = max(dimWeight, actualWeight)
+    var billingWeightLB_pickup=Math.max(dimWeightLB,actualWeightLB);
+
+    // Sort sides for surcharge checks
+    var sides=[lenInch,widInch,hgtInch].sort(function(a,b){return b-a});
+    var maxSide=sides[0],midSide=sides[1],minSide=sides[2];
+    var girthPlus=maxSide+2*(midSide+minSide); // col AP
+    var volume=maxSide*midSide*minSide;         // col AQ
+
+    // Oversize checks (cols AW-AY) — only for 分销发货/美国发货/欧洲发货
+    var isOverlong='',isOverweight='',isOversize='';
+    if(shippingMode!=='平台仓发'&&shippingMode!=='海外仓自提'){
+      if(platform.indexOf('Amazon 欧洲')>=0){
+        if(maxSide>47||midSide>23||volume>150000) isOverlong='超长';
+      } else {
+        if(maxSide>47||midSide>29||girthPlus>104||volume>10360) isOverlong='超长';
+      }
+      if(platform.indexOf('Amazon 欧洲')<0){
+        if(actualWeightLB>48) isOverweight='超重';
+        if(maxSide>95||girthPlus>129||volume>17270||actualWeightLB>108) isOversize='Oversize';
+      }
+    }
+
+    // 计费重 LB (col AM) — billing weight for FedEx delivery
+    var billingWeightLB=billingWeightLB_pickup;
+    if(shippingMode==='欧洲发货') billingWeightLB=billingWeightLB_pickup;
+    else if(isOversize) billingWeightLB=Math.max(billingWeightLB_pickup,90);
+    else if(isOverlong) billingWeightLB=Math.max(billingWeightLB_pickup,40);
+
+    // ===== 尾程派送费明细 (cols AZ-BM) =====
+    var isEuDelivery = platform.indexOf('Amazon 欧洲')>=0 && (shippingMode==='分销发货'||shippingMode==='欧洲发货');
+    var isUSDelivery = shippingMode==='分销发货'||shippingMode==='美国发货';
+
+    // AZ: 基础运费
+    var baseFee=0;
+    if(isEuDelivery){
+      // European: DHL rate lookup (simplified weight-based)
+      var w=Math.ceil(innerWeight);
+      if(w<=5) baseFee=8; else if(w<=10) baseFee=12; else if(w<=15) baseFee=16;
+      else if(w<=20) baseFee=20; else if(w<=30) baseFee=28; else baseFee=28+(w-30)*0.8;
+    } else if(isUSDelivery){
+      baseFee=getFedExRate(billingWeightLB);
+    }
+
+    // BA: 超长附加费
+    var overlongFee=0;
+    if(isEuDelivery&&isOverlong) overlongFee=7;
+    else if(isOverlong) overlongFee=4.8;
+    // BB: 超长超大费
+    var oversizeFee=(isOversize)?45:0;
+    // BC: 超重费
+    var overweightFee=(isOverweight)?7:0;
+    // BD: 最大附加费 = MAX(BA,BB,BC)
+    var maxSurcharge=Math.max(overlongFee,oversizeFee,overweightFee);
+
+    // BE: 住宅送达费
+    var residential=0;
+    if(isEuDelivery) residential=0;
+    else if(isUSDelivery) residential=3;
+    // BF: 偏远附加费
+    var remote=0;
+    if(isEuDelivery) remote=0;
+    else if(isUSDelivery) remote=5.5*0.30;
+    // BG: 燃油费率
+    var fuelRate=0;
+    if(isEuDelivery&&isOverlong) fuelRate=0.31;
+    else if(isUSDelivery) fuelRate=0.205;
+    // BH: 燃油附加费
+    var fuelSurcharge=0;
+    if(isEuDelivery) fuelSurcharge=maxSurcharge*fuelRate;
+    else if(isUSDelivery) fuelSurcharge=(baseFee+maxSurcharge+residential+remote+0+0)*fuelRate; // BI,BJ added below
+
+    // BI: 旺季住宅附加费
+    var seasonResidential=0;
+    if(!isEuDelivery&&isUSDelivery) seasonResidential=2.5;
+    // BJ: 旺季超尺寸/超重附加费
+    var seasonOversize=0;
+    if(!isEuDelivery){
+      if(isOversize) seasonOversize=50;
+      else if(isOverlong||isOverweight) seasonOversize=5;
+    }
+
+    // Recalc fuel surcharge with seasonal fees for US
+    if(isUSDelivery&&!isEuDelivery){
+      fuelSurcharge=(baseFee+maxSurcharge+residential+remote+seasonResidential+seasonOversize)*fuelRate;
+    }
+
+    // BL: 一件代发操作费 (from 快仓/无忧达 lookup tables)
+    var dropshipOpFee=0;
+    if(isEuDelivery){
+      var w3=Math.ceil(innerWeight);
+      if(w3<=5) dropshipOpFee=3; else if(w3<=10) dropshipOpFee=4; else dropshipOpFee=4+(w3-10)*0.2;
+    } else if(isUSDelivery){
+      dropshipOpFee=getDropshipOpFee(billingWeightLB_pickup);
+    }
+
+    // BM: 尾程派送费（含出库操作费）= AZ+BD+BE+BF+BH+BI+BJ+BL
+    var lastMileDelivery=baseFee+maxSurcharge+residential+remote+fuelSurcharge+seasonResidential+seasonOversize+dropshipOpFee;
+
+    // BN: 自提操作费(原币) — for 海外仓自提 only
+    var selfPickupFee=0;
+    if(shippingMode==='海外仓自提'&&salesType!=='分销'){
+      if(platform.indexOf('Amazon 欧洲')>=0){
+        // European self-pickup from 无忧达 lookup (simplified)
+        var w2=Math.ceil(innerWeight);
+        if(w2<=5) selfPickupFee=4; else if(w2<=10) selfPickupFee=5; else selfPickupFee=5+(w2-10)*0.3;
+      } else {
+        selfPickupFee=getSelfPickupFee(billingWeightLB_pickup);
+      }
+    }
+
+    // ===== CQ: 辅助列 = I_row / I_row4 (Excel: CQ=I/$I$4) =====
+    // I$4 is the base USD exchange rate (first data row)
+    var baseUSD=val('pcExRate')||6.7684;
+    var cq=exRate/baseUSD;
+
+    // ===== Platform fee lookup =====
+    var feeKey=platform+'|'+country;
+    var fees=PLATFORM_FEES[feeKey];
+    if(!fees){ var fc=PLATFORM_COUNTRIES[platform]||['US']; fees=PLATFORM_FEES[platform+'|'+fc[0]]; }
+    if(!fees) fees={commission:0.15,returnRate:0.08,adRate:0.05,rentRate:0.02,vat:0,stdProfit:0.12};
+
+    // ===== Profit Calculation (cols BV-CL, exact Excel formulas) =====
+    var costRatio=fees.costRatio||1;
+    var BV=price/costRatio;  // Cost(原币) = Price/costRatio (Excel col X/BV)
+    // Z: BD价格(原币) — for DEMO VC DF, the actual selling price to channel is Z=V*0.9
+    var bdPrice=(platform==='DEMO VC DF')?price*0.9:0;
+    var BW=price;  // Price(原币)
+    var BX=shipIncome; // 运费收入(原币)
+    var BY=cost;   // 单位成本(RMB)
+    var BZ=freightRmb; // 头程费用(RMB)
+
+    // CA: 退货成本(原币) = (Cost+运费收入)*退货率
+    var CA=(BV+BX)*fees.returnRate;
+
+    // BO/CB: 退货运费(原币) = IF(target/Lowes, 0, MAX(BM*退货率/CQ, AA*退货率/CQ))
+    // AA is in local currency (no /CQ), BM is in USD (needs /CQ)
+    var CB=0;
+    if(platform!=='target'&&platform!=='Lowes'){
+      if(shippingMode==='平台仓发'){
+        CB=Math.max(lastMileDelivery*fees.returnRate/cq, wfsFbaFee*fees.returnRate);
+      } else {
+        CB=lastMileDelivery*fees.returnRate/cq;
+      }
+    }
+
+    // CC: 平台佣金(原币) — DSV special formula
+    var CC;
+    if(platform==='DSV'){
+      // DSV: (Cost+运费-退货成本-广告)*佣金比例 — but 广告 depends on CC, so use simplified:
+      // Excel: =IF(DSV, (BV+BX-CA-CD)*BP, ...) where CD=(BW+BX)*BR
+      var CD_temp=(BW+BX)*fees.adRate;
+      CC=(BV+BX-CA-CD_temp)*fees.commission;
+    } else if(platform==='豪雅Amazon VC'){
+      CC=(BV+BX)*fees.commission;
+    } else {
+      // General: (Cost+运费-退货成本)*佣金比例
+      CC=(BV+BX-CA)*fees.commission;
+    }
+
+    // CD: 广告+推广费(原币) = (Price+运费收入)*广告比例
+    var CD=(BW+BX)*fees.adRate;
+
+    // CE: 海外仓操作费(原币) = IF(分销,0, 自提操作费/CQ)
+    var CE=(salesType==='分销')?0:selfPickupFee/cq;
+
+    // CF: 尾程费用(原币) = IF(分销,0, MAX(BM/CQ, AA/CQ))
+    // AA(wfsFbaFee) is already in local currency — no /CQ needed
+    // BM(lastMileDelivery) is in USD — needs /CQ to convert
+    var CF=0;
+    if(salesType!=='分销'){
+      if(shippingMode==='平台仓发'){
+        CF=Math.max(lastMileDelivery/cq, wfsFbaFee);
+      } else {
+        CF=lastMileDelivery/cq;
+      }
+    }
+
+    // CG: 仓租(原币) = IF(分销,0, (Price+运费收入)*仓租比例)
+    var CG=(salesType==='分销')?0:(BW+BX)*fees.rentRate;
+
+    // CH: VAT税(原币) = (Price+运费收入-佣金)/(1+VAT)*VAT
+    var CH=0;
+    if(fees.vat>0) CH=(BW+BX-CC)/(1+fees.vat)*fees.vat;
+
+    // CI: 退货退款(仅针对豪雅分销)
+    var CI=0;
+    if(['macy','HD','Overstock','Bestbuy'].indexOf(platform)>=0 && salesType==='分销' && distributor==='豪雅'){
+      CI=-(cost*fees.returnRate*0.9/exRate);
+    }
+
+    // CJ: 成本合计(原币) = (BY+BZ)/汇率 + CA+CB+CC+CD+CE+CF+CG+CH+CI
+    var CJ=(BY+BZ)/exRate + CA+CB+CC+CD+CE+CF+CG+CH+CI;
+
+    // CK: 利润(原币) = Cost+运费收入 - 成本合计
+    var CK=BV+BX-CJ;
+
+    // CL: 利润率 = 利润/(Price+运费收入)
+    var CL=(BW+BX)>0? CK/(BW+BX) : 0;
+
+    // CM: 标准利润率
+    var stdProfit=fees.stdProfit;
+    if(platform==='Amazon 北美'||salesType==='分销') stdProfit=0.12;
+
+    return {
+      platform:platform, country:country, currency:currency, orderType:orderType,
+      profit:CK, profitRate:CL, stdProfit:stdProfit,
+      shippingMode:shippingMode, tariffRate:tariffRate, exRate:exRate,
+      unitCostRmb:BY, freightRmb:BZ, unitCostFC:BY/exRate, freightFC:BZ/exRate,
+      chargeWeightLB:billingWeightLB, lastMileDelivery:lastMileDelivery,
+      isOverlong:isOverlong, isOverweight:isOverweight, isOversize:isOversize,
+      returnCost:CA, returnShip:CB, commission:CC, adCost:CD,
+      warehouseFee:CE, lastMileCost:CF, rentCost:CG, vatCost:CH, refund:CI,
+      totalCost:CJ, totalRevenue:BV+BX, bdPrice:bdPrice,
+      wfsFbaFee:wfsFbaFee, cq:cq
+    };
+  }
+
+  /* ===== Render all selected platforms ===== */
+  window.calcAllProfits = function(){
+    updateEuField();
+    updateFeeLinks();
+    var platforms=getSelectedPlatforms();
+    var container=$('profitResults');
+    if(!platforms.length){ container.innerHTML='<div class="profit-no-platform">请在左侧勾选平台并填写产品信息后查看测算结果</div>'; return; }
+    var price=val('pcPrice');
+    if(!price){ container.innerHTML='<div class="profit-no-platform">请填写 Price(原币) 后查看测算结果</div>'; return; }
+    var fmt=function(v){return isNaN(v)?'--':parseFloat(v).toFixed(2);};
+    var pct=function(v){return isNaN(v)?'--':(v*100).toFixed(1)+'%';};
+    var html='';
+
+    platforms.forEach(function(plat){
+      var isAmazon=(plat==='Amazon 北美'||plat==='Amazon 欧洲'||plat==='Amazon 日本');
+      var orderTypes=isAmazon?getAmazonOrderTypes(plat):[getOrderTypeForPlatform(plat)];
+
+      orderTypes.forEach(function(ot){
+        var r=calcForPlatform(plat,ot);
+        var rateOk=r.profitRate>=r.stdProfit;
+        var flags=[];
+        if(r.isOverlong) flags.push('<span class="pr-badge warn">超长</span>');
+        if(r.isOverweight) flags.push('<span class="pr-badge warn">超重</span>');
+        if(r.isOversize) flags.push('<span class="pr-badge danger">Oversize</span>');
+        if(!flags.length) flags.push('<span class="pr-badge ok">标准</span>');
+
+        var countryLabel=r.country!=='US'?' ('+r.country+')':'';
+        var currLabel=r.currency!=='USD'?' '+r.currency:'';
+
+        html+='<div class="profit-plat-card">'+
+          '<div class="profit-plat-header">'+
+            '<div class="profit-plat-name">'+plat+countryLabel+' <span style="font-size:11px;opacity:0.8;font-weight:400">'+r.orderType+currLabel+'</span></div>'+
+            '<div class="profit-plat-profit">'+
+              '<div class="profit-plat-profit-val">'+fmt(r.profit)+'</div>'+
+              '<div class="profit-plat-profit-rate '+(rateOk?'profit-plat-rate-good':'profit-plat-rate-bad')+'">'+
+                '利润率 '+pct(r.profitRate)+' / 标准 '+pct(r.stdProfit)+
+              '</div>'+
+            '</div>'+
+          '</div>'+
+          '<div class="profit-plat-body">'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">发货模式</span><span class="profit-plat-item-value">'+r.shippingMode+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">汇率('+r.currency+')</span><span class="profit-plat-item-value">'+r.exRate+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">关税率</span><span class="profit-plat-item-value">'+pct(r.tariffRate)+'</span></div>'+
+            (r.bdPrice>0?'<div class="profit-plat-item"><span class="profit-plat-item-label">BD价格(原币)</span><span class="profit-plat-item-value" style="color:var(--accent)">'+fmt(r.bdPrice)+'</span></div>':'')+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">单位成本(RMB)</span><span class="profit-plat-item-value">'+fmt(r.unitCostRmb)+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">头程费用(RMB)</span><span class="profit-plat-item-value">'+fmt(r.freightRmb)+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">(RMB折原币)</span><span class="profit-plat-item-value">'+fmt(r.unitCostFC+r.freightFC)+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">计费重(LB)</span><span class="profit-plat-item-value">'+(r.chargeWeightLB||'--')+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">尾程派送费</span><span class="profit-plat-item-value">'+fmt(r.lastMileDelivery)+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">尾程(原币)</span><span class="profit-plat-item-value">'+fmt(r.lastMileCost)+'</span></div>'+
+            (r.wfsFbaFee>0?'<div class="profit-plat-item"><span class="profit-plat-item-label">FBA/WFS费</span><span class="profit-plat-item-value">'+fmt(r.wfsFbaFee)+'</span></div>':'')+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">佣金</span><span class="profit-plat-item-value">'+fmt(r.commission)+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">退货成本</span><span class="profit-plat-item-value">'+fmt(r.returnCost)+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">退货运费</span><span class="profit-plat-item-value">'+fmt(r.returnShip)+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">广告费</span><span class="profit-plat-item-value">'+fmt(r.adCost)+'</span></div>'+
+            (r.warehouseFee>0?'<div class="profit-plat-item"><span class="profit-plat-item-label">仓库操作费</span><span class="profit-plat-item-value">'+fmt(r.warehouseFee)+'</span></div>':'')+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">仓租</span><span class="profit-plat-item-value">'+fmt(r.rentCost)+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">VAT</span><span class="profit-plat-item-value">'+fmt(r.vatCost)+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">成本合计</span><span class="profit-plat-item-value" style="font-weight:800">'+fmt(r.totalCost)+'</span></div>'+
+            '<div class="profit-plat-item"><span class="profit-plat-item-label">收入合计</span><span class="profit-plat-item-value" style="font-weight:800">'+fmt(r.totalRevenue)+'</span></div>'+
+          '</div>'+
+          '<div class="profit-plat-flags">'+flags.join(' ')+'</div>'+
+        '</div>';
+      });
+    });
+    container.innerHTML=html;
+  };
+
+  // Bind events
+  document.addEventListener('DOMContentLoaded', function(){
+    $('profitCalcToggle').addEventListener('click', openProfitModal);
+    $('profitModalClose').addEventListener('click', closeProfitModal);
+    $('profitModalOverlay').addEventListener('click', function(e){ if(e.target===this) closeProfitModal(); });
+    $('pcParamsToggle').addEventListener('click', function(){ this.classList.toggle('expanded'); $('pcParamsContent').classList.toggle('collapsed'); });
+    document.querySelectorAll('#pcPlatformGrid input').forEach(function(cb){ cb.addEventListener('change', calcAllProfits); });
+    $('pcEuCountry').addEventListener('change', calcAllProfits);
+    document.querySelectorAll('.profit-left input[type="number"], .profit-left select:not(#pcEuCountry)').forEach(function(el){
+      el.addEventListener('input', calcAllProfits);
+      el.addEventListener('change', calcAllProfits);
+    });
+    updateEuField();
+    updateFeeLinks();
+  });
+})();
+</script>
+<script>
+<script>
+/* Toolbox toggle */
+document.addEventListener('DOMContentLoaded',function(){
+  var ov=document.getElementById('tbOv'),xb=document.getElementById('tbXb'),btn=document.getElementById('tbBtn');
+  if(!btn||!ov||!xb)return;
+  var ok=false;
+  btn.addEventListener('click',function(){
+    ov.classList.add('show');
+    if(!ok){ok=true;renderTabs();renderAll();fetchRates();}
+  });
+  xb.addEventListener('click',function(){ov.classList.remove('show');});
+  ov.addEventListener('click',function(e){if(e.target===ov)ov.classList.remove('show');});
+});
+
+/* Toolbox engine - global scope */
+
+// ====================== DATA ======================
+const TABS = [
+  { id:'unit', icon:'⚖️', label:'单位换算' },
+  { id:'currency', icon:'💱', label:'汇率换算' },
+  { id:'calendar', icon:'📅', label:'万年历' },
+  { id:'calc', icon:'🧮', label:'计算器' },
+  { id:'bom', icon:'🔩', label:'BOM核算' },
+];
+
+const UNIT_CATS = {
+  "长度": { u:["米(m)","千米(km)","厘米(cm)","毫米(mm)","英里(mi)","码(yd)","英尺(ft)","英寸(in)","海里(nmi)","丈","尺","寸"], b:{ "米(m)":1,"千米(km)":1000,"厘米(cm)":0.01,"毫米(mm)":0.001,"英里(mi)":1609.344,"码(yd)":0.9144,"英尺(ft)":0.3048,"英寸(in)":0.0254,"海里(nmi)":1852,"丈":3.3333,"尺":0.3333,"寸":0.0333 }},
+  "重量": { u:["千克(kg)","克(g)","毫克(mg)","吨(t)","磅(lb)","盎司(oz)","斤","两","钱"], b:{ "千克(kg)":1,"克(g)":0.001,"毫克(mg)":1e-6,"吨(t)":1000,"磅(lb)":0.453592,"盎司(oz)":0.0283495,"斤":0.5,"两":0.05,"钱":0.005 }},
+  "面积": { u:["平方米(m²)","平方千米(km²)","公顷(ha)","亩","平方英尺(ft²)","平方英里(mi²)","平方码(yd²)","英亩(ac)"], b:{ "平方米(m²)":1,"平方千米(km²)":1e6,"公顷(ha)":1e4,"亩":666.667,"平方英尺(ft²)":0.092903,"平方英里(mi²)":2.59e6,"平方码(yd²)":0.836127,"英亩(ac)":4046.86 }},
+  "体积": { u:["升(L)","毫升(mL)","立方米(m³)","加仑(gal)","夸脱(qt)","品脱(pt)","杯(cup)","液量盎司(fl oz)","立方厘米(cm³)"], b:{ "升(L)":1,"毫升(mL)":0.001,"立方米(m³)":1000,"加仑(gal)":3.78541,"夸脱(qt)":0.946353,"品脱(pt)":0.473176,"杯(cup)":0.236588,"液量盎司(fl oz)":0.0295735,"立方厘米(cm³)":0.001 }},
+  "温度": { u:["摄氏度(°C)","华氏度(°F)","开尔文(K)"], special:true },
+  "速度": { u:["米/秒(m/s)","千米/时(km/h)","英里/时(mph)","节(kn)","马赫(Ma)","光速(c)"], b:{ "米/秒(m/s)":1,"千米/时(km/h)":0.277778,"英里/时(mph)":0.44704,"节(kn)":0.514444,"马赫(Ma)":340.29,"光速(c)":299792458 }},
+  "时间": { u:["秒(s)","分钟(min)","小时(h)","天(d)","周(wk)","月(30天)","年(365天)","毫秒(ms)","微秒(μs)"], b:{ "秒(s)":1,"分钟(min)":60,"小时(h)":3600,"天(d)":86400,"周(wk)":604800,"月(30天)":2592000,"年(365天)":31536000,"毫秒(ms)":0.001,"微秒(μs)":1e-6 }},
+  "数据": { u:["字节(B)","KB","MB","GB","TB","PB","比特(bit)"], b:{ "字节(B)":1,"KB":1024,"MB":1048576,"GB":1073741824,"TB":1099511627776,"PB":1125899906842624,"比特(bit)":0.125 }},
+  "功率": { u:["瓦(W)","千瓦(kW)","马力(hp)","英热单位/时(BTU/h)","兆瓦(MW)"], b:{ "瓦(W)":1,"千瓦(kW)":1000,"马力(hp)":745.7,"英热单位/时(BTU/h)":0.293071,"兆瓦(MW)":1e6 }},
+  "压力": { u:["帕斯卡(Pa)","千帕(kPa)","巴(bar)","标准大气压(atm)","磅/平方英寸(psi)","毫米汞柱(mmHg)"], b:{ "帕斯卡(Pa)":1,"千帕(kPa)":1000,"巴(bar)":1e5,"标准大气压(atm)":101325,"磅/平方英寸(psi)":6894.76,"毫米汞柱(mmHg)":133.322 }},
+  "角度": { u:["度(°)","弧度(rad)","百分度(grad)","角分(')","角秒(\")"], b:{ "度(°)":1,"弧度(rad)":57.2958,"百分度(grad)":0.9,"角分(')":1/60,"角秒(\")":1/3600 }},
+};
+
+function convertTemp(v, f, t) {
+  let c; if(f==='摄氏度(°C)')c=v; else if(f==='华氏度(°F)')c=(v-32)*5/9; else c=v-273.15;
+  if(t==='摄氏度(°C)')return c; if(t==='华氏度(°F)')return c*9/5+32; return c+273.15;
+}
+
+const CURRENCIES = [
+  {c:"USD",n:"美元",f:"🇺🇸"},{c:"CNY",n:"人民币",f:"🇨🇳"},{c:"EUR",n:"欧元",f:"🇪🇺"},{c:"GBP",n:"英镑",f:"🇬🇧"},
+  {c:"JPY",n:"日元",f:"🇯🇵"},{c:"KRW",n:"韩元",f:"🇰🇷"},{c:"AED",n:"迪拉姆",f:"🇦🇪"},{c:"SAR",n:"沙特里亚尔",f:"🇸🇦"},
+  {c:"HKD",n:"港币",f:"🇭🇰"},{c:"TWD",n:"新台币",f:"🇹🇼"},{c:"SGD",n:"新加坡元",f:"🇸🇬"},{c:"AUD",n:"澳元",f:"🇦🇺"},
+  {c:"CAD",n:"加元",f:"🇨🇦"},{c:"CHF",n:"瑞士法郎",f:"🇨🇭"},{c:"THB",n:"泰铢",f:"🇹🇭"},{c:"MYR",n:"林吉特",f:"🇲🇾"},
+  {c:"INR",n:"印度卢比",f:"🇮🇳"},{c:"RUB",n:"俄罗斯卢布",f:"🇷🇺"},{c:"BRL",n:"巴西雷亚尔",f:"🇧🇷"},{c:"TRY",n:"土耳其里拉",f:"🇹🇷"},
+  {c:"SEK",n:"瑞典克朗",f:"🇸🇪"},{c:"NOK",n:"挪威克朗",f:"🇳🇴"},{c:"DKK",n:"丹麦克朗",f:"🇩🇰"},{c:"PLN",n:"波兰兹罗提",f:"🇵🇱"},
+  {c:"ZAR",n:"南非兰特",f:"🇿🇦"},{c:"MXN",n:"墨西哥比索",f:"🇲🇽"},{c:"NZD",n:"新西兰元",f:"🇳🇿"},{c:"PHP",n:"菲律宾比索",f:"🇵🇭"},
+  {c:"IDR",n:"印尼盾",f:"🇮🇩"},{c:"CZK",n:"捷克克朗",f:"🇨🇿"},{c:"HUF",n:"匈牙利福林",f:"🇭🇺"},{c:"ILS",n:"以色列谢克尔",f:"🇮🇱"},
+  {c:"BGN",n:"保加利亚列弗",f:"🇧🇬"},{c:"RON",n:"罗马尼亚列伊",f:"🇷🇴"},{c:"ISK",n:"冰岛克朗",f:"🇮🇸"},
+];
+
+// ===== CALENDAR DATA =====
+// Holidays: h=法定假日, w=补班, f=民俗/国际节日, s=二十四节气, i=伊斯兰节日, m=跨境电商节点
+const H = {};
+function ah(d,n,t){
+  if(!H[d]) H[d]={name:n,type:t,all:[{name:n,type:t}]};
+  else { H[d].all.push({name:n,type:t}); H[d].name=H[d].all.map(x=>x.name).join('/'); if(t==='h'||t==='w')H[d].type=t; }
+}
+
+// ---- 2025 ----
+ah("2025-01-01","元旦","h"); ah("2025-01-28","春节(除夕)","h"); ah("2025-01-29","春节","h"); ah("2025-01-30","春节","h"); ah("2025-01-31","春节","h"); ah("2025-02-01","春节","h"); ah("2025-02-02","春节","h"); ah("2025-02-03","春节","h"); ah("2025-02-04","春节","h");
+ah("2025-01-26","春节补班","w"); ah("2025-02-08","春节补班","w");
+ah("2025-02-14","情人节","f"); ah("2025-03-08","妇女节","f");
+ah("2025-04-04","清明节","h"); ah("2025-04-05","清明节","h"); ah("2025-04-06","清明节","h");
+ah("2025-05-01","劳动节","h"); ah("2025-05-02","劳动节","h"); ah("2025-05-03","劳动节","h"); ah("2025-05-04","劳动节/青年节","h"); ah("2025-05-05","劳动节","h");
+ah("2025-04-27","劳动节补班","w");
+ah("2025-05-31","端午节","h"); ah("2025-06-01","端午节/儿童节","h"); ah("2025-06-02","端午节","h");
+ah("2025-10-01","国庆节","h"); ah("2025-10-02","国庆节","h"); ah("2025-10-03","国庆节","h"); ah("2025-10-04","国庆节/中秋节","h"); ah("2025-10-05","国庆节","h"); ah("2025-10-06","国庆节/中秋节","h"); ah("2025-10-07","国庆节","h"); ah("2025-10-08","国庆节","h");
+ah("2025-09-28","国庆补班","w"); ah("2025-10-11","国庆补班","w");
+// 2025 节气
+ah("2025-01-05","小寒","s"); ah("2025-01-20","大寒","s"); ah("2025-02-03","立春","s"); ah("2025-02-18","雨水","s");
+ah("2025-03-05","惊蛰","s"); ah("2025-03-20","春分","s"); ah("2025-04-04","清明","s"); ah("2025-04-20","谷雨","s");
+ah("2025-05-05","立夏","s"); ah("2025-05-21","小满","s"); ah("2025-06-05","芒种","s"); ah("2025-06-21","夏至","s");
+ah("2025-07-07","小暑","s"); ah("2025-07-22","大暑","s"); ah("2025-08-07","立秋","s"); ah("2025-08-23","处暑","s");
+ah("2025-09-07","白露","s"); ah("2025-09-22","秋分","s"); ah("2025-10-08","寒露","s"); ah("2025-10-23","霜降","s");
+ah("2025-11-07","立冬","s"); ah("2025-11-22","小雪","s"); ah("2025-12-07","大雪","s"); ah("2025-12-21","冬至","s");
+// 2025 伊斯兰
+ah("2025-03-01","斋月开始(预估)","i"); ah("2025-03-30","开斋节(预估)","i"); ah("2025-03-31","开斋节(预估)","i");
+ah("2025-06-06","古尔邦节(预估)","i"); ah("2025-06-07","古尔邦节(预估)","i");
+// 2025 电商
+ah("2025-06-18","618大促","m"); ah("2025-11-11","双十一","m"); ah("2025-12-12","双十二","m");
+ah("2025-11-28","黑色星期五","m"); ah("2025-12-01","网络星期一","m");
+ah("2025-12-25","圣诞节","f"); ah("2025-10-31","万圣节","f");
+ah("2025-11-27","感恩节","f"); ah("2025-03-12","植树节","f"); ah("2025-09-10","教师节","f");
+// 2025 全球节日 & 跨境电商节点
+ah("2025-01-06","东正教圣诞节(俄)","f"); ah("2025-01-13","洛赫里节(印度)","f");
+ah("2025-01-20","马丁·路德·金日(美)","f"); ah("2025-01-26","澳大利亚国庆日","f"); ah("2025-01-29","除夕/春节","f");
+ah("2025-02-02","超级碗(美)","m"); ah("2025-02-09","超级碗(美)","m");
+ah("2025-02-17","总统日(美)","f");
+ah("2025-03-17","圣帕特里克节(爱尔兰)","f"); ah("2025-03-20","春分","s");
+ah("2025-03-27","Lazada生日大促","m"); ah("2025-03-28","速卖通328大促","m"); ah("2025-03-30","英国母亲节","f");
+ah("2025-04-01","愚人节","f"); ah("2025-04-11","美国宠物日","f");
+ah("2025-04-13","泼水节(泰国/东南亚)","f"); ah("2025-04-20","复活节(欧美)","f");
+ah("2025-04-22","地球日","f"); ah("2025-04-23","世界读书日","f");
+ah("2025-05-05","五月五(墨西哥)","f"); ah("2025-05-11","母亲节(全球多国)","f");
+ah("2025-05-26","阵亡将士纪念日(美)","f");
+ah("2025-06-01","国际儿童节","f"); ah("2025-06-05","世界环境日","f");
+ah("2025-06-15","父亲节(全球多国)","f"); ah("2025-06-21","夏至/仲夏节(北欧)","f");
+ah("2025-07-04","美国独立日","f"); ah("2025-07-15","亚马逊Prime Day(预估)","m"); ah("2025-07-16","亚马逊Prime Day(预估)","m");
+ah("2025-08-08","国际猫咪日","f"); ah("2025-08-15","印度独立日","f");
+ah("2025-09-01","美加劳动节","f"); ah("2025-09-16","墨西哥独立日","f");
+ah("2025-09-20","慕尼黑啤酒节开幕","f"); ah("2025-09-27","世界旅游日","f");
+ah("2025-10-03","德国统一日","f"); ah("2025-10-04","世界动物日","f");
+ah("2025-10-13","加拿大感恩节","f"); ah("2025-10-21","排灯节(印度)","f");
+ah("2025-11-01","万灵节(拉美)","f"); ah("2025-11-02","亡灵节(墨西哥)","f");
+ah("2025-11-11","光棍节/双十一","m"); ah("2025-11-29","小企业星期六(美)","m");
+ah("2025-12-14","光明节(犹太)","f"); ah("2025-12-24","平安夜","f"); ah("2025-12-26","节礼日(英澳加)","m");
+ah("2025-12-31","除夕夜","f");
+
+// ---- 2026 ----
+ah("2026-01-01","元旦","h"); ah("2026-01-02","元旦","h"); ah("2026-01-03","元旦","h");
+ah("2026-02-17","春节(除夕)","h"); ah("2026-02-18","春节","h"); ah("2026-02-19","春节","h"); ah("2026-02-20","春节","h"); ah("2026-02-21","春节","h"); ah("2026-02-22","春节","h"); ah("2026-02-23","春节","h");
+ah("2026-02-14","情人节/春节补班","w"); ah("2026-02-28","春节补班","w");
+ah("2026-03-08","妇女节","f");
+ah("2026-04-04","清明节","h"); ah("2026-04-05","清明节","h"); ah("2026-04-06","清明节","h");
+ah("2026-05-01","劳动节","h"); ah("2026-05-02","劳动节","h"); ah("2026-05-03","劳动节","h");
+ah("2026-05-04","青年节","f");
+ah("2026-05-31","端午节","h"); ah("2026-06-01","端午节/儿童节","h"); ah("2026-06-02","端午节","h");
+ah("2026-09-25","中秋节","h"); ah("2026-09-26","中秋节","h"); ah("2026-09-27","中秋节","h");
+ah("2026-10-01","国庆节","h"); ah("2026-10-02","国庆节","h"); ah("2026-10-03","国庆节","h"); ah("2026-10-04","国庆节","h"); ah("2026-10-05","国庆节","h"); ah("2026-10-06","国庆节","h"); ah("2026-10-07","国庆节","h");
+ah("2026-09-20","中秋补班","w"); ah("2026-10-10","国庆补班","w");
+// 2026 节气
+ah("2026-01-05","小寒","s"); ah("2026-01-20","大寒","s"); ah("2026-02-04","立春","s"); ah("2026-02-18","雨水","s");
+ah("2026-03-05","惊蛰","s"); ah("2026-03-20","春分","s"); ah("2026-04-05","清明","s"); ah("2026-04-20","谷雨","s");
+ah("2026-05-05","立夏","s"); ah("2026-05-21","小满","s"); ah("2026-06-05","芒种","s"); ah("2026-06-21","夏至","s");
+ah("2026-07-07","小暑","s"); ah("2026-07-22","大暑","s"); ah("2026-08-07","立秋","s"); ah("2026-08-23","处暑","s");
+ah("2026-09-07","白露","s"); ah("2026-09-23","秋分","s"); ah("2026-10-08","寒露","s"); ah("2026-10-23","霜降","s");
+ah("2026-11-07","立冬","s"); ah("2026-11-22","小雪","s"); ah("2026-12-07","大雪","s"); ah("2026-12-22","冬至","s");
+// 2026 伊斯兰
+ah("2026-02-18","斋月开始(预估)","i"); ah("2026-03-20","开斋节(预估)","i"); ah("2026-03-21","开斋节(预估)","i");
+ah("2026-05-27","古尔邦节(预估)","i"); ah("2026-05-28","古尔邦节(预估)","i");
+ah("2026-06-17","伊斯兰新年(预估)","i");
+// 2026 电商
+ah("2026-06-18","618大促","m"); ah("2026-11-11","双十一","m"); ah("2026-12-12","双十二","m");
+ah("2026-11-27","黑色星期五","m"); ah("2026-11-30","网络星期一","m");
+ah("2026-12-25","圣诞节","f"); ah("2026-10-31","万圣节","f");
+ah("2026-11-26","感恩节","f"); ah("2026-03-12","植树节","f"); ah("2026-09-10","教师节","f");
+// 中东地区节日补充
+ah("2026-03-21","诺鲁孜节(波斯新年)","i"); ah("2026-12-02","阿联酋国庆日","i");
+ah("2026-09-23","沙特国庆日","i");
+// 2026 全球节日 & 跨境电商节点
+ah("2026-01-06","东正教圣诞节(俄)","f"); ah("2026-01-19","马丁·路德·金日(美)","f");
+ah("2026-01-26","澳大利亚国庆日","f");
+ah("2026-02-08","超级碗(美)(预估)","m"); ah("2026-02-16","总统日(美)","f");
+ah("2026-03-17","圣帕特里克节(爱尔兰)","f"); ah("2026-03-22","英国母亲节","f");
+ah("2026-03-27","Lazada生日大促(预估)","m"); ah("2026-03-28","速卖通328大促","m");
+ah("2026-04-01","愚人节","f"); ah("2026-04-05","复活节(欧美)","f");
+ah("2026-04-11","美国宠物日","f"); ah("2026-04-13","泼水节(泰国/东南亚)","f");
+ah("2026-04-22","地球日","f"); ah("2026-04-23","世界读书日","f");
+ah("2026-05-05","五月五(墨西哥)","f"); ah("2026-05-10","母亲节(全球多国)","f");
+ah("2026-05-25","阵亡将士纪念日(美)","f");
+ah("2026-06-05","世界环境日","f"); ah("2026-06-21","父亲节(全球多国)","f");
+ah("2026-06-24","仲夏节(北欧)","f");
+ah("2026-07-04","美国独立日","f"); ah("2026-07-14","法国国庆日","f");
+ah("2026-07-15","亚马逊Prime Day(预估)","m"); ah("2026-07-16","亚马逊Prime Day(预估)","m");
+ah("2026-08-08","国际猫咪日","f"); ah("2026-08-15","印度独立日","f");
+ah("2026-09-07","美加劳动节","f"); ah("2026-09-16","墨西哥独立日","f");
+ah("2026-09-19","慕尼黑啤酒节开幕","f"); ah("2026-09-27","世界旅游日","f");
+ah("2026-10-03","德国统一日","f"); ah("2026-10-04","世界动物日","f");
+ah("2026-10-10","排灯节(印度)(预估)","f"); ah("2026-10-12","加拿大感恩节","f");
+ah("2026-11-01","万灵节(拉美)","f"); ah("2026-11-02","亡灵节(墨西哥)","f");
+ah("2026-11-28","小企业星期六(美)","m");
+ah("2026-12-05","光明节(犹太)(预估)","f"); ah("2026-12-24","平安夜","f");
+ah("2026-12-26","节礼日(英澳加)","m"); ah("2026-12-31","除夕夜","f");
+// 2026 东南亚电商
+ah("2026-01-01","Shopee新年大促","m"); ah("2026-02-02","Lazada 2.2大促","m");
+ah("2026-03-03","Shopee 3.3大促","m"); ah("2026-04-04","Lazada 4.4大促","m");
+ah("2026-05-05","Shopee 5.5大促","m"); ah("2026-06-06","Lazada 6.6大促","m");
+ah("2026-07-07","Shopee 7.7大促","m"); ah("2026-08-08","Lazada 8.8大促","m");
+ah("2026-09-09","Shopee 9.9大促","m"); ah("2026-10-10","Shopee 10.10大促","m");
+// 2026 各国国庆/重要日
+ah("2026-02-06","新西兰国庆日","f"); ah("2026-03-01","韩国三一节","f");
+ah("2026-05-09","欧洲日","f"); ah("2026-06-12","菲律宾独立日","f");
+ah("2026-08-01","瑞士国庆日","f"); ah("2026-08-09","新加坡国庆日","f");
+ah("2026-08-17","印尼独立日","f"); ah("2026-08-31","马来西亚国庆日","f");
+ah("2026-10-29","土耳其共和国日","f"); ah("2026-11-15","巴西共和国日","f");
+
+// ---- 2027 ----
+ah("2027-01-01","元旦","h"); ah("2027-01-02","元旦","h"); ah("2027-01-03","元旦","h");
+ah("2027-02-06","春节(除夕)","h"); ah("2027-02-07","春节","h"); ah("2027-02-08","春节","h"); ah("2027-02-09","春节","h"); ah("2027-02-10","春节","h"); ah("2027-02-11","春节","h"); ah("2027-02-12","春节","h");
+ah("2027-04-04","清明节","h"); ah("2027-04-05","清明节","h"); ah("2027-04-06","清明节","h");
+ah("2027-05-01","劳动节","h"); ah("2027-05-02","劳动节","h"); ah("2027-05-03","劳动节","h");
+ah("2027-06-19","端午节","h"); ah("2027-06-20","端午节","h"); ah("2027-06-21","端午节","h");
+ah("2027-09-15","中秋节","h"); ah("2027-09-16","中秋节","h"); ah("2027-09-17","中秋节","h");
+ah("2027-10-01","国庆节","h"); ah("2027-10-02","国庆节","h"); ah("2027-10-03","国庆节","h"); ah("2027-10-04","国庆节","h"); ah("2027-10-05","国庆节","h"); ah("2027-10-06","国庆节","h"); ah("2027-10-07","国庆节","h");
+// 2027 节气
+ah("2027-01-05","小寒","s"); ah("2027-01-20","大寒","s"); ah("2027-02-04","立春","s"); ah("2027-02-19","雨水","s");
+ah("2027-03-06","惊蛰","s"); ah("2027-03-21","春分","s"); ah("2027-04-05","清明","s"); ah("2027-04-20","谷雨","s");
+ah("2027-05-06","立夏","s"); ah("2027-05-21","小满","s"); ah("2027-06-06","芒种","s"); ah("2027-06-21","夏至","s");
+ah("2027-07-07","小暑","s"); ah("2027-07-23","大暑","s"); ah("2027-08-07","立秋","s"); ah("2027-08-23","处暑","s");
+ah("2027-09-08","白露","s"); ah("2027-09-23","秋分","s"); ah("2027-10-08","寒露","s"); ah("2027-10-23","霜降","s");
+ah("2027-11-07","立冬","s"); ah("2027-11-22","小雪","s"); ah("2027-12-07","大雪","s"); ah("2027-12-22","冬至","s");
+// 2027 伊斯兰
+ah("2027-02-08","斋月开始(预估)","i"); ah("2027-03-09","开斋节(预估)","i"); ah("2027-03-10","开斋节(预估)","i");
+ah("2027-05-16","古尔邦节(预估)","i"); ah("2027-05-17","古尔邦节(预估)","i");
+// 2027 电商
+ah("2027-06-18","618大促","m"); ah("2027-11-11","双十一","m"); ah("2027-12-12","双十二","m");
+ah("2027-11-26","黑色星期五","m"); ah("2027-11-29","网络星期一","m");
+ah("2027-12-25","圣诞节","f"); ah("2027-10-31","万圣节","f"); ah("2027-02-14","情人节","f");
+// 2027 全球节日 & 跨境电商节点
+ah("2027-01-06","东正教圣诞节(俄)","f"); ah("2027-01-18","马丁·路德·金日(美)","f");
+ah("2027-01-26","澳大利亚国庆日","f");
+ah("2027-02-07","超级碗(美)(预估)","m"); ah("2027-02-15","总统日(美)","f");
+ah("2027-03-14","英国母亲节","f"); ah("2027-03-17","圣帕特里克节(爱尔兰)","f");
+ah("2027-03-21","诺鲁孜节(波斯新年)","i");
+ah("2027-03-27","Lazada生日大促(预估)","m"); ah("2027-03-28","复活节(欧美)","f");
+ah("2027-04-01","愚人节","f"); ah("2027-04-11","美国宠物日","f");
+ah("2027-04-13","泼水节(泰国/东南亚)","f"); ah("2027-04-22","地球日","f");
+ah("2027-05-05","五月五(墨西哥)","f"); ah("2027-05-09","母亲节(全球多国)","f");
+ah("2027-05-31","阵亡将士纪念日(美)","f");
+ah("2027-06-01","国际儿童节","f"); ah("2027-06-20","父亲节(全球多国)","f");
+ah("2027-06-24","仲夏节(北欧)","f");
+ah("2027-07-04","美国独立日","f"); ah("2027-07-14","法国国庆日","f");
+ah("2027-07-14","亚马逊Prime Day(预估)","m"); ah("2027-07-15","亚马逊Prime Day(预估)","m");
+ah("2027-08-15","印度独立日","f"); ah("2027-09-06","美加劳动节","f");
+ah("2027-09-16","墨西哥独立日","f"); ah("2027-09-18","慕尼黑啤酒节开幕","f");
+ah("2027-10-03","德国统一日","f"); ah("2027-10-11","加拿大感恩节","f");
+ah("2027-10-29","排灯节(印度)(预估)","f");
+ah("2027-11-01","万灵节(拉美)","f"); ah("2027-11-02","亡灵节(墨西哥)","f");
+ah("2027-11-25","感恩节(美)","f"); ah("2027-11-27","小企业星期六(美)","m");
+ah("2027-12-02","阿联酋国庆日","i"); ah("2027-09-23","沙特国庆日","i");
+ah("2027-12-24","平安夜","f"); ah("2027-12-26","节礼日(英澳加)","m"); ah("2027-12-31","除夕夜","f");
+// 2027 东南亚电商
+ah("2027-02-02","Lazada 2.2大促","m"); ah("2027-03-03","Shopee 3.3大促","m");
+ah("2027-04-04","Lazada 4.4大促","m"); ah("2027-05-05","Shopee 5.5大促","m");
+ah("2027-06-06","Lazada 6.6大促","m"); ah("2027-07-07","Shopee 7.7大促","m");
+ah("2027-08-08","Lazada 8.8大促","m"); ah("2027-09-09","Shopee 9.9大促","m");
+ah("2027-10-10","Shopee 10.10大促","m");
+
+// 宜忌
+const YI=["开业","签约","出行","搬家","装修","祭祀","求财","上架新品","谈判","纳采","嫁娶","修造","祈福","会友","入宅","安床","栽种","交易","立券","开仓","开光","动土","牧养","挂匾"];
+const JI=["诉讼","远行","动土","开仓","出货","安葬","破土","伐木","行丧","词讼","开渠","放水","嫁娶","入宅","移徙","祈福","安床","开市","交易","栽种","纳畜","修造","牧养","挂匾"];
+function getYiJi(date){
+  const seed=date.getFullYear()*366+date.getMonth()*31+date.getDate();
+  const yi=[],ji=[];
+  for(let i=0;i<4;i++){yi.push(YI[(seed*3+i*7)%YI.length]);ji.push(JI[(seed*5+i*11)%JI.length]);}
+  return{yi:[...new Set(yi)],ji:[...new Set(ji)]};
+}
+
+// 天干地支
+const TG=["甲","乙","丙","丁","戊","己","庚","辛","壬","癸"];
+const DZ=["子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"];
+const SX=["鼠","牛","虎","兔","龙","蛇","马","羊","猴","鸡","狗","猪"];
+function getGZ(y){return TG[(y-4)%10]+DZ[(y-4)%12]+"年 "+SX[(y-4)%12]+"年";}
+
+// 简易农历（仅展示近似，非精确推算）
+const LUNAR=["初一","初二","初三","初四","初五","初六","初七","初八","初九","初十","十一","十二","十三","十四","十五","十六","十七","十八","十九","二十","廿一","廿二","廿三","廿四","廿五","廿六","廿七","廿八","廿九","三十"];
+function getLunar(d){return LUNAR[((d.getDate()+d.getMonth()*3+d.getFullYear())%30)];}
+
+function dateKey(y,m,d){return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
+
+// ====================== STATE ======================
+let activeTab = 'unit';
+let unitCat = '长度', unitFrom, unitTo, unitVal = '1', unitValTo = '', unitLastEdit = 'from';
+let curFrom = 'USD', curTo = 'CNY', curAmt = '100', curAmtTo = '', curLastEdit = 'from', rates = null, ratesDate = '', ratesLoading = true, ratesError = null;
+let calYear, calMonth, calSelected;
+let calcDisplay = '0', calcPrev = null, calcOp = null, calcNewNum = true, calcHistory = [], calcMode = 'basic';
+
+(function initCal(){const n=new Date();calYear=n.getFullYear();calMonth=n.getMonth();calSelected=new Date(n);})();
+(function initUnit(){const c=UNIT_CATS[unitCat];unitFrom=c.u[0];unitTo=c.u[1];})();
+
+// ====================== RENDER HELPERS ======================
+var _tb$ = (function(){var m={'tabs':'_tbTabs','panel-unit':'_tbP-unit','panel-currency':'_tbP-currency','panel-calendar':'_tbP-calendar','panel-calc':'_tbP-calc','panel-bom':'_tbP-bom'};return function(id){return document.getElementById(m[id]||id);}})();
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (html !== undefined) e.innerHTML = html;
+  return e;
+}
+
+// ====================== TABS ======================
+function renderTabs(){
+  const c=_tb$('tabs'); c.innerHTML='';
+  TABS.forEach(t=>{
+    const b=el('button','tab-btn'+(activeTab===t.id?' active':''),`<span class="icon">${t.icon}</span><span>${t.label}</span>`);
+    b.onclick=()=>{activeTab=t.id;renderTabs();renderAll();};
+    c.appendChild(b);
+  });
+}
+
+function renderAll(){
+  ['unit','currency','calendar','calc','bom'].forEach(id=>{
+    _tb$('panel-'+id).classList.toggle('hidden', activeTab!==id);
+  });
+  if(activeTab==='unit') renderUnit();
+  else if(activeTab==='currency') renderCurrency();
+  else if(activeTab==='calendar') renderCalendar();
+  else if(activeTab==='calc') renderCalc();
+  else if(activeTab==='bom') renderBom();
+}
+
+// ====================== UNIT CONVERTER ======================
+function unitConvertForward(v){
+  if(isNaN(v)||v==='')return '—';
+  v=parseFloat(v); const c=UNIT_CATS[unitCat];
+  if(c.special) return convertTemp(v,unitFrom,unitTo).toFixed(4);
+  const base=v*c.b[unitFrom];
+  return (base/c.b[unitTo]).toFixed(8).replace(/\.?0+$/,'');
+}
+function unitConvertReverse(v){
+  if(isNaN(v)||v==='')return '—';
+  v=parseFloat(v); const c=UNIT_CATS[unitCat];
+  if(c.special) return convertTemp(v,unitTo,unitFrom).toFixed(4);
+  const base=v*c.b[unitTo];
+  return (base/c.b[unitFrom]).toFixed(8).replace(/\.?0+$/,'');
+}
+function syncUnit(direction){
+  if(direction==='from'){
+    unitValTo=unitConvertForward(unitVal);
+    if(unitValTo==='—')unitValTo='';
+  } else {
+    unitVal=unitConvertReverse(unitValTo);
+    if(unitVal==='—')unitVal='';
+  }
+}
+
+function renderUnit(){
+  // compute initial sync
+  if(unitLastEdit==='from') syncUnit('from'); else syncUnit('to');
+
+  const p=_tb$('panel-unit');
+  const cats=Object.keys(UNIT_CATS);
+  const c=UNIT_CATS[unitCat];
+  const opts=u=>c.u.map(x=>`<option value="${x}"${x===u?' selected':''}>${x}</option>`).join('');
+  p.innerHTML=`
+    <div class="pills" id="unit-pills"></div>
+    <div class="card">
+      <div class="label">从</div>
+      <div class="input-row">
+        <input type="number" class="num-input" id="unit-input" value="${unitVal}">
+        <select class="unit-select" id="unit-from">${opts(unitFrom)}</select>
+      </div>
+      <div style="text-align:center;margin:6px 0"><button class="swap-btn" id="unit-swap">⇅</button></div>
+      <div class="label">到</div>
+      <div class="input-row">
+        <input type="number" class="num-input" id="unit-input-to" value="${unitValTo}" style="border-color:var(--primary);color:var(--primary);background:var(--primary-light)">
+        <select class="unit-select" id="unit-to">${opts(unitTo)}</select>
+      </div>
+    </div>`;
+  // pills
+  const pc=_tb$('unit-pills');
+  cats.forEach(ct=>{
+    const b=el('button','pill '+(unitCat===ct?'on':'off'),ct);
+    b.onclick=()=>{unitCat=ct;const nc=UNIT_CATS[ct];unitFrom=nc.u[0];unitTo=nc.u[1];unitVal='1';unitLastEdit='from';renderUnit();};
+    pc.appendChild(b);
+  });
+  _tb$('unit-input').oninput=e=>{unitVal=e.target.value;unitLastEdit='from';syncUnit('from');_tb$('unit-input-to').value=unitValTo;};
+  _tb$('unit-input-to').oninput=e=>{unitValTo=e.target.value;unitLastEdit='to';syncUnit('to');_tb$('unit-input').value=unitVal;};
+  _tb$('unit-from').onchange=e=>{unitFrom=e.target.value;if(unitLastEdit==='from')syncUnit('from'); else syncUnit('to');_tb$('unit-input').value=unitVal;_tb$('unit-input-to').value=unitValTo;};
+  _tb$('unit-to').onchange=e=>{unitTo=e.target.value;if(unitLastEdit==='from')syncUnit('from'); else syncUnit('to');_tb$('unit-input').value=unitVal;_tb$('unit-input-to').value=unitValTo;};
+  _tb$('unit-swap').onclick=()=>{[unitFrom,unitTo]=[unitTo,unitFrom];[unitVal,unitValTo]=[unitValTo,unitVal];unitLastEdit=unitLastEdit==='from'?'to':'from';renderUnit();};
+}
+
+// ====================== CURRENCY ======================
+// 离线参考汇率（当所有API都不可用时兜底，基于2026年4月参考值）
+const OFFLINE_RATES = {
+  USD:1,CNY:7.24,EUR:0.88,GBP:0.77,JPY:149.5,KRW:1365,AED:3.67,SAR:3.75,
+  HKD:7.78,TWD:32.3,SGD:1.33,AUD:1.53,CAD:1.36,CHF:0.87,THB:33.8,MYR:4.42,
+  INR:83.5,RUB:92.5,BRL:5.05,TRY:32.1,SEK:10.3,NOK:10.5,DKK:6.58,PLN:3.92,
+  ZAR:18.2,MXN:17.1,NZD:1.62,PHP:56.2,IDR:15800,CZK:22.5,HUF:355,ILS:3.63,
+  BGN:1.72,RON:4.38,ISK:137
+};
+let ratesSource = '';
+
+function fetchRates(){
+  ratesLoading=true; ratesError=null; renderCurrency();
+
+  // API 1: Frankfurter (ECB data, free, no key)
+  const api1 = fetch('https://api.frankfurter.dev/v2/rates?base=USD',{signal:AbortSignal.timeout(8000)})
+    .then(r=>{if(!r.ok)throw new Error('fail');return r.json();})
+    .then(d=>{if(!d.rates)throw new Error('no rates');return{rates:{USD:1,...d.rates},date:d.date||'',src:'ECB via Frankfurter'};});
+
+  // API 2: exchangerate-api.com open access (free, no key)
+  const api2 = fetch('https://open.er-api.com/v6/latest/USD',{signal:AbortSignal.timeout(8000)})
+    .then(r=>{if(!r.ok)throw new Error('fail');return r.json();})
+    .then(d=>{if(!d.rates)throw new Error('no rates');return{rates:d.rates,date:d.time_last_update_utc?d.time_last_update_utc.split(' ').slice(0,4).join(' '):'',src:'ExchangeRate-API'};});
+
+  // Try API1 first, fallback to API2, then offline
+  api1.catch(()=>api2).then(d=>{
+    rates=d.rates; ratesDate=d.date; ratesSource=d.src;
+    ratesLoading=false; syncCur(curLastEdit); renderCurrency();
+  }).catch(()=>{
+    // All APIs failed, use offline fallback
+    rates={...OFFLINE_RATES}; ratesDate='离线参考(2026年4月)'; ratesSource='离线数据';
+    ratesLoading=false; syncCur(curLastEdit); renderCurrency();
+  });
+}
+
+function curConvertForward(v){
+  if(!rates||v===''||isNaN(v))return '';
+  return (parseFloat(v)/(rates[curFrom]||1)*(rates[curTo]||1)).toFixed(2);
+}
+function curConvertReverse(v){
+  if(!rates||v===''||isNaN(v))return '';
+  return (parseFloat(v)/(rates[curTo]||1)*(rates[curFrom]||1)).toFixed(2);
+}
+function curRate(){
+  if(!rates)return '';
+  return ((rates[curTo]||1)/(rates[curFrom]||1)).toFixed(4);
+}
+function syncCur(dir){
+  if(dir==='from'){curAmtTo=curConvertForward(curAmt);}
+  else{curAmt=curConvertReverse(curAmtTo);}
+}
+
+function renderCurrency(){
+  const p=_tb$('panel-currency');
+  if(ratesLoading){p.innerHTML='<div class="loading"><div class="spin">💱</div><p>正在获取实时汇率数据...</p></div>';return;}
+  if(ratesError){p.innerHTML=`<div class="loading"><div style="font-size:36px;margin-bottom:12px">⚠️</div><p>${ratesError}</p><button class="pill on" style="margin-top:14px" id="retry-rates">重试</button></div>`;
+    setTimeout(()=>{const rb=_tb$('retry-rates');if(rb)rb.onclick=fetchRates;},0);return;}
+
+  // sync values
+  if(curLastEdit==='from') syncCur('from'); else syncCur('to');
+
+  const validCurs = CURRENCIES.filter(c=>rates[c.c]!==undefined);
+
+  function curLabel(code){const c=CURRENCIES.find(x=>x.c===code);return c?`${c.f} ${c.c} - ${c.n}`:code;}
+
+  const quickCodes=["CNY","EUR","GBP","JPY","AED","SAR","HKD","KRW"];
+  const quickHtml=quickCodes.filter(c=>rates[c]).map(code=>{
+    const cur=CURRENCIES.find(x=>x.c===code);
+    return `<div class="rate-card"><span class="flag">${cur.f}</span><div><div class="rname">${cur.n}</div><div class="rval">${rates[code].toFixed(code==='JPY'||code==='KRW'?0:2)}</div></div></div>`;
+  }).join('');
+
+  p.innerHTML=`
+    <div class="card">
+      <div class="label">从</div>
+      <div class="input-row">
+        <input type="number" class="num-input" id="cur-input" value="${curAmt}">
+        <div class="cur-picker-wrap" id="cpw-from">
+          <button class="cur-picker-btn" id="cp-from-btn">${curLabel(curFrom)}</button>
+          <div class="cur-dropdown hidden" id="cp-from-dd">
+            <input type="text" class="cur-search" id="cp-from-search" placeholder="搜索货币名称/代码...">
+            <div class="cur-list" id="cp-from-list"></div>
+          </div>
+        </div>
+      </div>
+      <div style="text-align:center;margin:6px 0"><button class="swap-btn" id="cur-swap">⇅</button></div>
+      <div class="label">到</div>
+      <div class="input-row">
+        <input type="number" class="num-input" id="cur-input-to" value="${curAmtTo}" style="border-color:var(--accent);color:var(--accent);background:var(--accent-light)">
+        <div class="cur-picker-wrap" id="cpw-to">
+          <button class="cur-picker-btn" id="cp-to-btn">${curLabel(curTo)}</button>
+          <div class="cur-dropdown hidden" id="cp-to-dd">
+            <input type="text" class="cur-search" id="cp-to-search" placeholder="搜索货币名称/代码...">
+            <div class="cur-list" id="cp-to-list"></div>
+          </div>
+        </div>
+      </div>
+      <div class="rate-info">
+        <span class="rate-eq">1 ${curFrom} = ${curRate()} ${curTo}</span>
+        <span class="rate-time">数据来源: ${ratesSource} · ${ratesDate}</span>
+      </div>
+    </div>
+    <div style="margin-top:4px">
+      <div class="label" style="margin-bottom:8px">常用汇率 (基于 1 USD)</div>
+      <div class="rates-grid">${quickHtml}</div>
+    </div>`;
+
+  // --- searchable dropdown logic ---
+  function setupPicker(side){
+    const btn=$(`cp-${side}-btn`), dd=$(`cp-${side}-dd`), search=$(`cp-${side}-search`), list=$(`cp-${side}-list`);
+    const curVal=()=>side==='from'?curFrom:curTo;
+    const setCur=(code)=>{
+      if(side==='from')curFrom=code; else curTo=code;
+      dd.classList.add('hidden');
+      if(curLastEdit==='from')syncCur('from');else syncCur('to');
+      renderCurrency();
+    };
+    function renderList(filter=''){
+      const q=filter.toLowerCase();
+      list.innerHTML='';
+      validCurs.forEach(c=>{
+        if(q && !c.c.toLowerCase().includes(q) && !c.n.toLowerCase().includes(q) && !c.n.includes(q)) return;
+        const item=document.createElement('button');
+        item.className='cur-item'+(c.c===curVal()?' active':'');
+        item.innerHTML=`<span>${c.f}</span><span class="cur-item-code">${c.c}</span><span class="cur-item-name">${c.n}</span>`;
+        item.onclick=(e)=>{e.stopPropagation();setCur(c.c);};
+        list.appendChild(item);
+      });
+      if(!list.children.length) list.innerHTML='<div style="padding:12px;color:var(--text2);font-size:12px;text-align:center">未找到匹配货币</div>';
+    }
+    btn.onclick=(e)=>{
+      e.stopPropagation();
+      // close the other dropdown
+      const otherSide=side==='from'?'to':'from';
+      $(`cp-${otherSide}-dd`).classList.add('hidden');
+      dd.classList.toggle('hidden');
+      if(!dd.classList.contains('hidden')){
+        search.value='';
+        renderList();
+        setTimeout(()=>search.focus(),50);
+      }
+    };
+    search.oninput=()=>renderList(search.value);
+    search.onclick=e=>e.stopPropagation();
+    renderList();
+  }
+  setupPicker('from');
+  setupPicker('to');
+
+  // close dropdowns on outside click
+  document.addEventListener('click',function closeCurDD(e){
+    if(!_tb$('cpw-from').contains(e.target)) _tb$('cp-from-dd').classList.add('hidden');
+    if(!_tb$('cpw-to').contains(e.target)) _tb$('cp-to-dd').classList.add('hidden');
+  });
+
+  _tb$('cur-input').oninput=e=>{curAmt=e.target.value;curLastEdit='from';syncCur('from');_tb$('cur-input-to').value=curAmtTo;};
+  _tb$('cur-input-to').oninput=e=>{curAmtTo=e.target.value;curLastEdit='to';syncCur('to');_tb$('cur-input').value=curAmt;};
+  _tb$('cur-swap').onclick=()=>{[curFrom,curTo]=[curTo,curFrom];[curAmt,curAmtTo]=[curAmtTo,curAmt];curLastEdit=curLastEdit==='from'?'to':'from';renderCurrency();};
+}
+
+// ====================== CALENDAR ======================
+function renderCalendar(){
+  const p=_tb$('panel-calendar');
+  const y=calYear, m=calMonth;
+  const today=new Date();
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const prevDays=new Date(y,m,0).getDate();
+  const mNames=["一月","二月","三月","四月","五月","六月","七月","八月","九月","十月","十一月","十二月"];
+  const wk=["日","一","二","三","四","五","六"];
+
+  // build cells
+  const cells=[];
+  for(let i=firstDay-1;i>=0;i--) cells.push({d:prevDays-i,t:'other'});
+  for(let i=1;i<=daysInMonth;i++) cells.push({d:i,t:'cur'});
+  const rem=42-cells.length; for(let i=1;i<=rem;i++) cells.push({d:i,t:'other'});
+
+  let dayGridHtml='';
+  cells.forEach((cell,idx)=>{
+    const isCur=cell.t==='cur';
+    const dk=isCur?dateKey(y,m,cell.d):null;
+    const hol=dk?H[dk]:null;
+    const isToday=isCur&&cell.d===today.getDate()&&m===today.getMonth()&&y===today.getFullYear();
+    const isSel=isCur&&cell.d===calSelected.getDate()&&m===calSelected.getMonth()&&y===calSelected.getFullYear();
+    const dow=idx%7; const isWE=dow===0||dow===6;
+
+    let cls='day-cell'; if(!isCur)cls+=' other'; if(isToday)cls+=' today'; else if(isSel)cls+=' selected';
+
+    let dnStyle=''; let badges='';
+    if(isCur && !isToday && !isSel){
+      if(hol&&hol.type==='h') dnStyle='color:var(--green)';
+      else if(hol&&hol.type==='i') dnStyle='color:var(--purple)';
+      else if(hol&&hol.type==='s') dnStyle='color:var(--gold)';
+      else if(hol&&hol.type==='m') dnStyle='color:var(--accent)';
+      else if(isWE) dnStyle='color:var(--red)';
+      if(hol&&hol.type==='w'&&!isToday&&!isSel) dnStyle='color:var(--text2)';
+    }
+    if(isCur&&hol&&hol.all&&!isToday){
+      const hasH=hol.all.some(e=>e.type==='h');
+      const hasW=hol.all.some(e=>e.type==='w');
+      const hasI=hol.all.some(e=>e.type==='i');
+      const hasS=hol.all.some(e=>e.type==='s');
+      const hasM=hol.all.some(e=>e.type==='m');
+      if(hasH) badges+=`<span class="badge" style="color:var(--green)">休</span>`;
+      if(hasW&&!hasH) badges+=`<span class="badge" style="color:var(--red)">班</span>`;
+      if(hasI) badges+=`<span class="badge-l" style="color:var(--purple)">☪</span>`;
+      if(hasS&&!hasI) badges+=`<span class="badge-l solar-badge" style="font-size:6px">☀</span>`;
+      if(hasM&&!hasH&&!hasW) badges+=`<span class="badge" style="color:var(--accent);font-size:6px">🛒</span>`;
+    }
+    const lunarText=isCur?getLunar(new Date(y,m,cell.d)):'';
+    // 如果是节气，农历位置显示节气名
+    let lunarDisplay=lunarText;
+    if(isCur&&hol&&hol.all){
+      const solarTerm=hol.all.find(e=>e.type==='s');
+      if(solarTerm) lunarDisplay=solarTerm.name;
+    }
+
+    dayGridHtml+=`<button class="${cls}" data-d="${cell.d}" data-t="${cell.t}" style="border:none;outline:none;">
+      ${badges}<span class="dn" style="${dnStyle}">${cell.d}</span>
+      <span class="lunar" ${isToday?'style="color:rgba(255,255,255,.7)"':''}>${isCur?lunarDisplay:''}</span>
+    </button>`;
+  });
+
+  // selected detail
+  const sk=dateKey(calSelected.getFullYear(),calSelected.getMonth(),calSelected.getDate());
+  const sh=H[sk];
+  const syj=getYiJi(calSelected);
+  const selDow=["星期日","星期一","星期二","星期三","星期四","星期五","星期六"][calSelected.getDay()];
+
+  // collect all events on selected date
+  let badgeHtml='';
+  if(sh && sh.all){
+    const bc={h:{bg:'var(--green-light)',c:'var(--green)'},w:{bg:'var(--red-light)',c:'var(--red)'},f:{bg:'var(--primary-light)',c:'var(--primary)'},s:{bg:'var(--gold-light)',c:'var(--gold)'},i:{bg:'var(--purple-light)',c:'var(--purple)'},m:{bg:'var(--accent-light)',c:'var(--accent)'}};
+    // deduplicate names
+    const seen=new Set();
+    sh.all.forEach(ev=>{
+      if(seen.has(ev.name))return; seen.add(ev.name);
+      const st=bc[ev.type]||bc.f;
+      badgeHtml+=`<span class="detail-badge" style="background:${st.bg};color:${st.c}">${ev.name}</span>`;
+    });
+  }
+
+  const detailIconBg = sh?(sh.type==='h'?'var(--green-light)':sh.type==='i'?'var(--purple-light)':sh.type==='s'?'var(--gold-light)':sh.type==='m'?'var(--accent-light)':'var(--primary-light)'):'var(--primary-light)';
+  const detailIconColor = sh?(sh.type==='h'?'var(--green)':sh.type==='i'?'var(--purple)':sh.type==='s'?'var(--gold)':sh.type==='m'?'var(--accent)':'var(--primary)'):'var(--primary)';
+
+  p.innerHTML=`
+    <div class="card">
+      <div class="cal-header">
+        <div>
+          <div class="cal-title">${y}年 ${mNames[m]}</div>
+          <div class="cal-sub">${getGZ(y)}</div>
+        </div>
+        <div class="cal-nav">
+          <button class="today-btn" id="cal-today">今天</button>
+          <button class="cal-nav-btn" id="cal-prev">◀</button>
+          <button class="cal-nav-btn" id="cal-next">▶</button>
+        </div>
+      </div>
+      <div class="wk-row">${wk.map((w,i)=>`<div class="wk-cell${i===0||i===6?' wkend':''}">${w}</div>`).join('')}</div>
+      <div class="day-grid" id="day-grid">${dayGridHtml}</div>
+    </div>
+    <div class="card">
+      <div class="detail-row">
+        <div class="detail-icon" style="background:${detailIconBg};color:${detailIconColor}">${calSelected.getDate()}</div>
+        <div>
+          <div class="detail-main">
+            ${calSelected.getFullYear()}年${calSelected.getMonth()+1}月${calSelected.getDate()}日
+            ${badgeHtml}
+          </div>
+          <div class="detail-sub">农历${getLunar(calSelected)} · ${selDow} · ${getGZ(calSelected.getFullYear()).split(' ')[0]}</div>
+        </div>
+      </div>
+      <div class="yi-ji-grid">
+        <div class="yi-box yi">
+          <div class="yi-title">✦ 宜</div>
+          <div>${syj.yi.map(x=>`<span class="yi-tag">${x}</span>`).join('')}</div>
+        </div>
+        <div class="yi-box ji">
+          <div class="yi-title">✧ 忌</div>
+          <div>${syj.ji.map(x=>`<span class="yi-tag">${x}</span>`).join('')}</div>
+        </div>
+      </div>
+    </div>`;
+
+  // events
+  _tb$('cal-today').onclick=()=>{const n=new Date();calYear=n.getFullYear();calMonth=n.getMonth();calSelected=new Date(n);renderCalendar();};
+  _tb$('cal-prev').onclick=()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();};
+  _tb$('cal-next').onclick=()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();};
+  _tb$('day-grid').querySelectorAll('.day-cell').forEach(btn=>{
+    btn.onclick=()=>{
+      if(btn.dataset.t==='cur'){
+        calSelected=new Date(calYear,calMonth,parseInt(btn.dataset.d));
+        renderCalendar();
+      }
+    };
+  });
+}
+
+// ====================== CALCULATOR ======================
+function calcDoCalc(a,op,b){
+  switch(op){
+    case '+':return a+b; case '-':return a-b; case '×':return a*b;
+    case '÷':return b===0?'Error':a/b; case '%':return a%b; case '^':return Math.pow(a,b);
+    default:return b;
+  }
+}
+
+function renderCalc(){
+  const p=_tb$('panel-calc');
+  const sciKeys=["sin","cos","tan","√","x²","log","ln","π","e","!","^","1/x","asin","acos","atan"];
+  const sciBtns=sciKeys.map(fn=>`<button class="calc-btn sci-fn" data-sci="${fn}">${fn}</button>`).join('');
+
+  p.innerHTML=`
+    <div class="mode-pills">
+      <button class="mode-pill ${calcMode==='basic'?'on':'off'}" data-mode="basic">基础</button>
+      <button class="mode-pill ${calcMode==='scientific'?'on':'off'}" data-mode="scientific">科学</button>
+    </div>
+    <div class="card">
+      <div class="calc-display">
+        <div class="calc-prev">${calcPrev!==null&&calcOp?calcPrev+' '+calcOp:''}</div>
+        <div class="calc-val" style="font-size:${calcDisplay.length>14?'22px':calcDisplay.length>10?'28px':'34px'}">${calcDisplay}</div>
+      </div>
+      ${calcMode==='scientific'?`<div class="calc-grid sci" id="sci-grid">${sciBtns}</div>`:''}
+      <div class="calc-grid basic" id="calc-grid">
+        <button class="calc-btn fn" data-act="AC">AC</button>
+        <button class="calc-btn num" data-act="±">±</button>
+        <button class="calc-btn num" data-op="%">%</button>
+        <button class="calc-btn op" data-op="÷">÷</button>
+        <button class="calc-btn num" data-num="7">7</button>
+        <button class="calc-btn num" data-num="8">8</button>
+        <button class="calc-btn num" data-num="9">9</button>
+        <button class="calc-btn op" data-op="×">×</button>
+        <button class="calc-btn num" data-num="4">4</button>
+        <button class="calc-btn num" data-num="5">5</button>
+        <button class="calc-btn num" data-num="6">6</button>
+        <button class="calc-btn op" data-op="-">−</button>
+        <button class="calc-btn num" data-num="1">1</button>
+        <button class="calc-btn num" data-num="2">2</button>
+        <button class="calc-btn num" data-num="3">3</button>
+        <button class="calc-btn op" data-op="+">+</button>
+        <button class="calc-btn num" data-num="0">0</button>
+        <button class="calc-btn num" data-num=".">.</button>
+        <button class="calc-btn num" data-act="⌫">⌫</button>
+        <button class="calc-btn eq" data-act="=">=</button>
+      </div>
+    </div>
+    ${calcHistory.length?`<div class="card history-box"><div class="h-title">计算历史</div>${calcHistory.map((h,i)=>`<div class="h-item${i===0?' latest':''}">${h}</div>`).join('')}</div>`:''}`;
+
+  // mode
+  p.querySelectorAll('.mode-pill').forEach(b=>b.onclick=()=>{calcMode=b.dataset.mode;renderCalc();});
+
+  // number input
+  p.querySelectorAll('[data-num]').forEach(b=>b.onclick=()=>{
+    const n=b.dataset.num;
+    if(calcNewNum){calcDisplay=n==='.'?'0.':n;calcNewNum=false;}
+    else{if(n==='.'&&calcDisplay.includes('.'))return;calcDisplay=calcDisplay==='0'&&n!=='.'?n:calcDisplay+n;}
+    updateCalcDisplay();
+  });
+
+  // operators
+  p.querySelectorAll('[data-op]').forEach(b=>b.onclick=()=>{
+    const nextOp=b.dataset.op;
+    const cur=parseFloat(calcDisplay);
+    if(calcPrev!==null&&!calcNewNum){
+      const r=calcDoCalc(calcPrev,calcOp,cur);
+      if(r==='Error'){calcDisplay='Error';calcPrev=null;calcOp=null;calcNewNum=true;updateCalcDisplay();return;}
+      calcPrev=r; calcDisplay=String(parseFloat(r.toFixed(10)));
+    }else{calcPrev=cur;}
+    calcOp=nextOp;calcNewNum=true;updateCalcDisplay();
+  });
+
+  // actions
+  p.querySelectorAll('[data-act]').forEach(b=>b.onclick=()=>{
+    const act=b.dataset.act;
+    if(act==='AC'){calcDisplay='0';calcPrev=null;calcOp=null;calcNewNum=true;}
+    else if(act==='±'){if(calcDisplay!=='0'&&calcDisplay!=='Error')calcDisplay=calcDisplay.startsWith('-')?calcDisplay.slice(1):'-'+calcDisplay;}
+    else if(act==='⌫'){if(calcDisplay.length<=1||calcDisplay==='Error'){calcDisplay='0';calcNewNum=true;}else calcDisplay=calcDisplay.slice(0,-1);}
+    else if(act==='='){
+      if(calcPrev===null||calcOp===null)return;
+      const cur=parseFloat(calcDisplay);
+      const r=calcDoCalc(calcPrev,calcOp,cur);
+      const expr=`${calcPrev} ${calcOp} ${cur} = ${r==='Error'?'Error':parseFloat(Number(r).toFixed(10))}`;
+      calcHistory=[expr,...calcHistory.slice(0,14)];
+      calcDisplay=r==='Error'?'Error':String(parseFloat(Number(r).toFixed(10)));
+      calcPrev=null;calcOp=null;calcNewNum=true;
+      renderCalc(); return;
+    }
+    updateCalcDisplay();
+  });
+
+  // scientific
+  if(calcMode==='scientific'){
+    p.querySelectorAll('[data-sci]').forEach(b=>b.onclick=()=>{
+      const fn=b.dataset.sci; const v=parseFloat(calcDisplay); let r;
+      switch(fn){
+        case'sin':r=Math.sin(v*Math.PI/180);break;case'cos':r=Math.cos(v*Math.PI/180);break;case'tan':r=Math.tan(v*Math.PI/180);break;
+        case'asin':r=Math.asin(v)*180/Math.PI;break;case'acos':r=Math.acos(v)*180/Math.PI;break;case'atan':r=Math.atan(v)*180/Math.PI;break;
+        case'√':r=Math.sqrt(v);break;case'log':r=Math.log10(v);break;case'ln':r=Math.log(v);break;
+        case'x²':r=v*v;break;case'1/x':r=v===0?'Error':1/v;break;
+        case'π':r=Math.PI;break;case'e':r=Math.E;break;
+        case'!':if(v<0||v>170||v%1!==0){r='Error';}else{let f=1;for(let i=2;i<=v;i++)f*=i;r=f;}break;
+        case'^':calcPrev=v;calcOp='^';calcNewNum=true;updateCalcDisplay();return;
+        default:return;
+      }
+      calcDisplay=r==='Error'?'Error':String(parseFloat(Number(r).toFixed(10)));
+      calcNewNum=true;updateCalcDisplay();
+    });
+  }
+
+  function updateCalcDisplay(){
+    const dv=p.querySelector('.calc-val');
+    const pv=p.querySelector('.calc-prev');
+    if(dv){dv.textContent=calcDisplay;dv.style.fontSize=calcDisplay.length>14?'22px':calcDisplay.length>10?'28px':'34px';}
+    if(pv)pv.textContent=calcPrev!==null&&calcOp?calcPrev+' '+calcOp:'';
+  }
+}
+
+// ====================== BOM COST CALCULATOR ======================
+const BOM_CATS = [
+  {v:'metal_assembly',l:'组装件',d:'金属焊接/组装'},
+  {v:'metal_sheet',l:'钣金件',d:'铝/钢板冲压'},
+  {v:'plastic',l:'塑胶件',d:'PVC/PP注塑'},
+  {v:'standard',l:'标准件',d:'螺钉螺母等'},
+  {v:'purchased',l:'外购件',d:'纸箱/塑料袋等'},
+];
+const BOM_PLASTIC = [
+  {v:'PVC',mr:0.6,pr:0.4},{v:'PP',mr:0.7,pr:0.3},{v:'PE',mr:0.65,pr:0.35},
+  {v:'ABS',mr:0.6,pr:0.4},{v:'PC',mr:0.55,pr:0.45},
+];
+const BOM_SURFACE = [
+  {v:'none',l:'无',up:0},{v:'spray',l:'喷塑',up:9},{v:'anodize',l:'阳极氧化',up:15},
+  {v:'electroplate',l:'电镀',up:20},{v:'paint',l:'喷漆',up:12},
+];
+const BOM_PURCH = [
+  {v:'carton',l:'纸箱',f:'area'},{v:'plastic_bag',l:'塑料袋',f:'area'},
+  {v:'bubble_wrap',l:'气泡袋',f:'area'},{v:'manual',l:'说明书',f:'fixed'},
+  {v:'label',l:'标签',f:'fixed'},{v:'other',l:'其他外购',f:'fixed'},
+];
+
+var bomItems=[], bomFees={mfg:0.03,mgmt:0.03,ship:0.03,profit:0.10,tax:0.13};
+var bomProductName='', bomSupplierPrice='', bomView='edit';
+var bomIdCounter=1;
+
+function bomNewItem(cat){
+  return {
+    id:bomIdCounter++, name:'',category:cat||'metal_sheet',material:cat==='purchased'?'':cat==='plastic'?'PP':'铝',
+    wallThick:'',spec:'',surface:'none',weight:'',qty:1,unit:'pcs',remark:'',
+    matPrice:cat==='plastic'?7:cat==='purchased'?0:23.5,lossRate:0.03,
+    holeCount:0,otherFee:0,outerDia:0,pipeLen:0,
+    plasticType:'PP',
+    stdUnitPrice:0,stdMatRatio:0.52,
+    purchType:'carton',pLen:0,pWid:0,pHei:0,areaPrice:5,fixedPrice:0,purchMatRatio:0.7,
+  };
+}
+
+function bomCalcItem(it){
+  const w=parseFloat(it.weight)||0, qty=parseFloat(it.qty)||1;
+  const mp=parseFloat(it.matPrice)||0, loss=parseFloat(it.lossRate)||0;
+  let mat=0,proc=0,surf=0,total=0;
+
+  if(it.category==='metal_assembly'||it.category==='metal_sheet'){
+    mat=mp*w*(1+loss)/1000;
+    const holes=parseFloat(it.holeCount)||0, other=parseFloat(it.otherFee)||0;
+    proc=1.6*w/1000+holes*0.13+other;
+    const st=BOM_SURFACE.find(s=>s.v===it.surface);
+    if(st&&st.up>0){
+      const od=(parseFloat(it.outerDia)||0)/1000;
+      const pl=(parseFloat(it.pipeLen)||0)/1000;
+      surf=od*Math.PI*pl*st.up;
+    }
+    total=(mat+proc+surf)*qty;
+  } else if(it.category==='plastic'){
+    mat=mp*w*(1+loss)/1000;
+    const pt=BOM_PLASTIC.find(p=>p.v===it.plasticType)||BOM_PLASTIC[1];
+    proc=mat/pt.mr*pt.pr;
+    total=(mat+proc)*qty;
+  } else if(it.category==='standard'){
+    const up=parseFloat(it.stdUnitPrice)||0;
+    total=up*qty;
+    mat=total*(parseFloat(it.stdMatRatio)||0.52);
+    proc=total-mat;
+  } else if(it.category==='purchased'){
+    const l=parseFloat(it.pLen)||0,w2=parseFloat(it.pWid)||0,h=parseFloat(it.pHei)||0;
+    const aup=parseFloat(it.areaPrice)||5;
+    const pt=BOM_PURCH.find(p=>p.v===it.purchType);
+    if(pt&&pt.f==='area'){
+      if(it.purchType==='carton') total=(l+w2+50)*(w2+h+30)*2*aup/1000000*qty;
+      else total=1.5*l*w2*2/1000000*qty;
+    } else total=(parseFloat(it.fixedPrice)||0)*qty;
+    mat=total*(parseFloat(it.purchMatRatio)||0.7);
+    proc=total-mat;
+  }
+  return {mat:+mat.toFixed(4),proc:+proc.toFixed(4),surf:+surf.toFixed(4),total:+total.toFixed(4)};
+}
+
+function bomCalcSummary(){
+  let tc=0,tm=0,tp=0;
+  const details=bomItems.map(it=>{
+    const c=bomCalcItem(it);
+    const qty=parseFloat(it.qty)||1;
+    tc+=c.total; tm+=c.mat*qty; tp+=c.total-c.mat*qty;
+    return {it,c};
+  });
+  const base=tm/1.13+tp;
+  const mfg=base*(parseFloat(bomFees.mfg)||0.03);
+  const mgmt=base*(parseFloat(bomFees.mgmt)||0.03);
+  const ship=base*(parseFloat(bomFees.ship)||0.03);
+  const sub=base+mfg+mgmt+ship;
+  const profit=sub*(parseFloat(bomFees.profit)||0.10);
+  const tax=sub*(parseFloat(bomFees.tax)||0.13);
+  const final_=tc+mfg+mgmt+ship+profit+tax;
+  return {details,tc,tm,tp,mfg,mgmt,ship,profit,tax,final_,base};
+}
+
+// ===== 2026年Q1 原材料市场基准价格 (国家统计局+行业数据) =====
+const MAT_PRICES = {
+  // 金属类 (元/kg，即元/吨÷1000)
+  '铝锭A00':24.87, '铝合金':25.5, '铝管':26, '铝型材':27, '铝板':26.5, '铝':25,
+  'Q235钢':3.36, '碳钢':3.5, '不锈钢304':17, '不锈钢201':10, '不锈钢':15,
+  '镀锌钢':4.2, '冷轧板':3.8, '热轧板':3.28, '铜':99.6, '锌':23.8,
+  '铁':3, '钢':3.5, '合金钢':5, '弹簧钢':6,
+  // 塑料类 (元/kg)
+  'PP':8.55, 'PE':8.7, 'PVC':6.8, 'ABS':11.5, 'PC':22, 'PA':25, 'POM':14,
+  'TPU':18, 'TPE':15, 'HDPE':9, 'LDPE':9.5, '尼龙':20, '硅胶':30,
+  // 木材类 (元/kg)
+  '松木':3, '桦木':4.5, '橡木':8, '胡桃木':15, '竹':4, 'MDF':2.5, '刨花板':2,
+  // 织物类 (元/kg)
+  '涤纶':9.15, '棉布':18, '牛津布':16, '帆布':14, '网布':12, '无纺布':8,
+  // 纸类 (元/kg)
+  '瓦楞纸':2.84, '白卡纸':5, '牛皮纸':4, '灰板纸':3,
+  // 橡胶类
+  '天然橡胶':16.66, '丁腈橡胶':18, 'EPDM':15, '硅橡胶':35,
+};
+// 表面处理市场价 (元/m²)
+const SURFACE_PRICES = { '喷塑':9, '阳极氧化':15, '电镀':20, '喷漆':12, '电泳':14, '镀锌':10 };
+// 标准件参考价 (元/pcs)
+const STD_PRICES = {
+  '螺钉M3':0.03, '螺钉M4':0.05, '螺钉M5':0.07, '螺钉M6':0.10, '螺钉M8':0.18,
+  '螺母M4':0.03, '螺母M5':0.04, '螺母M6':0.06, '螺母M8':0.10,
+  '铆钉':0.05, '弹簧':0.3, '垫片':0.02, '合页':1.5, '锁扣':2.5,
+  '脚轮':3, '拉手':1.5, '磁吸':0.8, '气弹簧':8,
+};
+// 包装参考价
+const PACK_PRICES = { '纸箱':5, '塑料袋':1.5, '气泡袋':1.5, '说明书':0.5, '标签':0.3, '泡沫':3, '珍珠棉':2 };
+// 加工费参考
+const PROC_REF = { '冲孔单价':0.13, '基础加工系数':1.6, '焊接工序':0.5, '折弯工序':0.3 };
+
+function bomAutoPrice(material){
+  const m=(material||'').trim();
+  for(const[k,v]of Object.entries(MAT_PRICES)){
+    if(m.includes(k)||k.includes(m)) return v;
+  }
+  return 0;
+}
+
+// ===== 离线产品拆解引擎 (规则+关键词匹配，无需联网) =====
+let bomAiLoading=false;
+
+// 产品零件知识库
+const PRODUCT_KB = {
+  // ==================== 围栏/栅栏/安全门 ====================
+  '围栏|栅栏|护栏|门栏|栏杆|围挡|隔断|gate|fence|barrier|railing|泳池':[
+    {name:'主框架',category:'metal_assembly',material:'铝合金',weight:1200,qty:1,holeCount:20,otherFee:0.5,surface:'spray',outerDia:40,pipeLen:1200,spec:'1200*800',remark:'切割焊接'},
+    {name:'立柱',category:'metal_assembly',material:'铝合金',weight:800,qty:2,holeCount:6,surface:'spray',outerDia:50,pipeLen:1200,spec:'50*1200'},
+    {name:'横杆/栏条',category:'metal_sheet',material:'铝管',weight:150,qty:4,holeCount:2,surface:'spray',outerDia:16,pipeLen:800,spec:'16*800'},
+    {name:'网格面板',category:'plastic',material:'PVC',weight:350,qty:1,plasticType:'PVC',spec:'750*1000'},
+    {name:'立柱压条',category:'metal_sheet',material:'铝管',weight:100,qty:2,holeCount:11,surface:'spray',outerDia:14,pipeLen:1170,spec:'14*4.5*1170'},
+    {name:'连接件/塑料件',category:'plastic',material:'PP',weight:20,qty:6,plasticType:'PP'},
+    {name:'锁扣',category:'standard',qty:1,stdUnitPrice:2.5,material:'不锈钢304'},
+    {name:'合页/铰链',category:'standard',qty:2,stdUnitPrice:1.5,material:'不锈钢304'},
+    {name:'螺钉',category:'standard',qty:24,stdUnitPrice:0.07,material:'Q235',spec:'M4*16'},
+    {name:'堵头',category:'plastic',material:'PP',weight:8,qty:6,plasticType:'PP'},
+    {name:'地插/膨胀螺丝',category:'standard',qty:4,stdUnitPrice:0.18,material:'Q235',spec:'M6*60'},
+  ],
+  // ==================== 洗衣机底座/家电底座 ====================
+  '洗衣机|底座|pedestal|washer|dryer|laundry|stand|烘干机|增高架':[
+    {name:'底座框架',category:'metal_assembly',material:'冷轧板',weight:6000,qty:1,holeCount:16,otherFee:2,surface:'spray',outerDia:600,pipeLen:700,spec:'600*700*300',remark:'SPCC冷轧钢,焊接成型'},
+    {name:'顶板',category:'metal_sheet',material:'冷轧板',weight:3500,qty:1,holeCount:4,surface:'spray',spec:'600*700*1.2'},
+    {name:'抽屉滑轨',category:'purchased',purchType:'other',qty:2,fixedPrice:8,material:'镀锌钢',remark:'三节滑轨'},
+    {name:'抽屉面板',category:'metal_sheet',material:'冷轧板',weight:800,qty:1,holeCount:2,surface:'spray',spec:'600*150*0.8'},
+    {name:'抽屉箱体',category:'metal_sheet',material:'镀锌钢',weight:1500,qty:1,holeCount:4,spec:'560*650*120'},
+    {name:'可调脚垫',category:'plastic',material:'PP',weight:40,qty:4,plasticType:'PP',remark:'含M10螺杆'},
+    {name:'防震垫',category:'purchased',purchType:'other',qty:4,fixedPrice:0.5,material:'橡胶'},
+    {name:'拉手',category:'standard',qty:1,stdUnitPrice:2,material:'不锈钢'},
+    {name:'螺丝套装',category:'standard',qty:20,stdUnitPrice:0.10,material:'Q235',spec:'M6*16'},
+    {name:'脚垫螺栓',category:'standard',qty:4,stdUnitPrice:0.3,material:'Q235',spec:'M10*50'},
+  ],
+  // ==================== 宠物车载垫/后座扩展垫 ====================
+  '车载|后座|car seat|backseat|extender|宠物垫|pet car|dog car|车用|汽车|座椅扩展':[
+    {name:'主支撑板',category:'metal_sheet',material:'冷轧板',weight:2500,qty:1,holeCount:8,surface:'spray',spec:'1200*400*1.5',remark:'折弯成型'},
+    {name:'支撑腿/折叠架',category:'metal_assembly',material:'Q235钢',weight:800,qty:2,holeCount:4,surface:'spray',outerDia:25,pipeLen:400,spec:'25*400',remark:'折叠铰链结构'},
+    {name:'面料/垫面',category:'purchased',purchType:'other',qty:1,fixedPrice:15,material:'牛津布600D',remark:'防水面料+海绵'},
+    {name:'海绵填充',category:'purchased',purchType:'other',qty:1,fixedPrice:8,material:'海绵',remark:'高密度海绵'},
+    {name:'防滑底面',category:'purchased',purchType:'other',qty:1,fixedPrice:3,material:'PVC防滑布'},
+    {name:'安全扣带',category:'purchased',purchType:'other',qty:2,fixedPrice:3,material:'尼龙织带+塑料扣'},
+    {name:'铰链',category:'standard',qty:4,stdUnitPrice:1.0,material:'Q235钢'},
+    {name:'卡扣',category:'plastic',material:'POM',weight:15,qty:4,plasticType:'PP'},
+    {name:'螺丝',category:'standard',qty:16,stdUnitPrice:0.07,material:'Q235'},
+  ],
+  // ==================== 宠物座椅套/后座保护垫 ====================
+  '座椅套|seat cover|后座套|保护垫|seat protector|hammock|宠物吊床|防脏|防刮':[
+    {name:'主面料',category:'purchased',purchType:'other',qty:1,fixedPrice:18,material:'牛津布600D',remark:'防水涂层'},
+    {name:'侧翼面料',category:'purchased',purchType:'other',qty:2,fixedPrice:5,material:'牛津布600D'},
+    {name:'PVC防滑底',category:'purchased',purchType:'other',qty:1,fixedPrice:4,material:'PVC',remark:'防滑网格'},
+    {name:'头枕绑带',category:'purchased',purchType:'other',qty:4,fixedPrice:1.5,material:'尼龙织带+塑料扣'},
+    {name:'座椅锚点扣',category:'purchased',purchType:'other',qty:2,fixedPrice:1,material:'尼龙+金属扣'},
+    {name:'拉链',category:'purchased',purchType:'other',qty:2,fixedPrice:1,material:'尼龙拉链'},
+    {name:'视窗网布',category:'purchased',purchType:'other',qty:1,fixedPrice:2,material:'网布'},
+    {name:'海绵条',category:'purchased',purchType:'other',qty:2,fixedPrice:1,material:'EPE海绵'},
+  ],
+  // ==================== 储物/收纳/柜/架 ====================
+  '储物|收纳|柜|架子|置物|书架|鞋架|展示架|shelf|cabinet|rack|organizer|storage':[
+    {name:'侧板',category:'metal_sheet',material:'冷轧板',weight:2000,qty:2,holeCount:12,surface:'spray',outerDia:400,pipeLen:1000,spec:'400*1000*0.8'},
+    {name:'层板',category:'metal_sheet',material:'冷轧板',weight:1200,qty:4,holeCount:4,surface:'spray',spec:'350*600*0.7'},
+    {name:'背板',category:'metal_sheet',material:'镀锌钢',weight:1500,qty:1,holeCount:8,spec:'600*1000*0.5'},
+    {name:'顶板/底板',category:'metal_sheet',material:'冷轧板',weight:1000,qty:2,holeCount:4,surface:'spray',spec:'350*600*0.8'},
+    {name:'门板',category:'metal_sheet',material:'冷轧板',weight:1500,qty:2,holeCount:4,surface:'spray',spec:'300*800*0.7'},
+    {name:'合页',category:'standard',qty:4,stdUnitPrice:1.5,material:'Q235钢'},
+    {name:'拉手',category:'standard',qty:2,stdUnitPrice:1.5,material:'锌合金'},
+    {name:'角码',category:'metal_sheet',material:'Q235钢',weight:30,qty:8,holeCount:2},
+    {name:'层板托',category:'standard',qty:16,stdUnitPrice:0.1,material:'Q235钢'},
+    {name:'螺丝',category:'standard',qty:40,stdUnitPrice:0.07,material:'Q235'},
+    {name:'脚垫',category:'plastic',material:'PP',weight:10,qty:4,plasticType:'PP'},
+    {name:'磁吸',category:'standard',qty:2,stdUnitPrice:0.8,material:'铁氧体'},
+  ],
+  // ==================== 保险箱/保险柜/gun safe ====================
+  '保险箱|保险柜|gun safe|safe box|枪柜|密码箱|biometric|fingerprint safe':[
+    {name:'箱体外壳',category:'metal_assembly',material:'冷轧板',weight:5000,qty:1,holeCount:6,surface:'spray',outerDia:300,pipeLen:400,spec:'300*250*400',remark:'1.5mm SPCC折弯焊接'},
+    {name:'门板',category:'metal_sheet',material:'冷轧板',weight:2000,qty:1,holeCount:4,surface:'spray',spec:'250*380*3',remark:'加厚3mm'},
+    {name:'滑轨/铰链机构',category:'purchased',purchType:'other',qty:1,fixedPrice:12,material:'Q235钢',remark:'slider型滑轨或drop-down气弹簧'},
+    {name:'指纹模块',category:'purchased',purchType:'other',qty:1,fixedPrice:25,material:'电子模块',remark:'生物识别+芯片'},
+    {name:'密码键盘/LCD',category:'purchased',purchType:'other',qty:1,fixedPrice:15,material:'电子模块'},
+    {name:'电磁锁体',category:'purchased',purchType:'other',qty:1,fixedPrice:8,material:'电磁铁+弹簧'},
+    {name:'内衬泡棉',category:'purchased',purchType:'other',qty:1,fixedPrice:5,material:'EVA海绵',remark:'激光切割成型'},
+    {name:'电池盒',category:'plastic',material:'ABS',weight:30,qty:1,plasticType:'ABS'},
+    {name:'钥匙锁',category:'purchased',purchType:'other',qty:1,fixedPrice:3,material:'锌合金'},
+    {name:'安装螺丝+膨胀螺栓',category:'standard',qty:6,stdUnitPrice:0.2,material:'Q235',spec:'M8*50'},
+    {name:'钢缆绳',category:'purchased',purchType:'other',qty:1,fixedPrice:4,material:'钢丝绳'},
+    {name:'USB充电线',category:'purchased',purchType:'other',qty:1,fixedPrice:1,material:'铜芯线'},
+  ],
+  // ==================== 宠物笼/围栏/狗笼 ====================
+  '狗笼|猫笼|宠物笼|pet crate|dog crate|kennel|playpen|宠物围栏|exercise pen':[
+    {name:'框架管材',category:'metal_assembly',material:'Q235钢',weight:1500,qty:1,holeCount:0,surface:'spray',outerDia:8,pipeLen:3000,spec:'Φ8铁丝',remark:'焊接网片'},
+    {name:'网片/围栏片',category:'metal_sheet',material:'Q235钢',weight:800,qty:4,holeCount:0,surface:'spray',spec:'600*500',remark:'铁丝焊接网'},
+    {name:'底盘/托盘',category:'plastic',material:'PP',weight:600,qty:1,plasticType:'PP',spec:'900*600'},
+    {name:'门板+门锁',category:'metal_sheet',material:'Q235钢',weight:300,qty:1,holeCount:4,surface:'spray'},
+    {name:'门插销',category:'standard',qty:2,stdUnitPrice:0.5,material:'Q235钢'},
+    {name:'提手',category:'plastic',material:'PP',weight:30,qty:1,plasticType:'PP'},
+    {name:'卡扣/连接件',category:'plastic',material:'PP',weight:5,qty:8,plasticType:'PP'},
+    {name:'螺丝',category:'standard',qty:16,stdUnitPrice:0.07,material:'Q235'},
+    {name:'脚垫',category:'plastic',material:'TPE',weight:8,qty:4,plasticType:'PP'},
+  ],
+  // ==================== 桌/台/工作台 ====================
+  '桌|台|desk|table|工作台|餐桌|茶几|边桌|电脑桌|gaming desk':[
+    {name:'桌面板',category:'purchased',purchType:'other',qty:1,fixedPrice:35,material:'MDF/刨花板',spec:'1200*600*18',remark:'三聚氰胺贴面'},
+    {name:'桌腿',category:'metal_assembly',material:'Q235钢',weight:600,qty:4,holeCount:4,surface:'spray',outerDia:50,pipeLen:720,spec:'50*720'},
+    {name:'横撑/支撑杆',category:'metal_sheet',material:'Q235钢',weight:400,qty:2,holeCount:4,spec:'40*40*1100'},
+    {name:'调节脚垫',category:'plastic',material:'PP',weight:15,qty:4,plasticType:'PP'},
+    {name:'螺丝',category:'standard',qty:24,stdUnitPrice:0.10,material:'Q235',spec:'M6*20'},
+    {name:'角码',category:'standard',qty:8,stdUnitPrice:0.5,material:'Q235钢'},
+    {name:'理线槽',category:'plastic',material:'PP',weight:50,qty:1,plasticType:'PP'},
+  ],
+  // ==================== 椅/凳 ====================
+  '椅|凳|chair|stool|bench|座椅|办公椅|gaming chair':[
+    {name:'座板',category:'plastic',material:'PP',weight:800,qty:1,plasticType:'PP',spec:'450*450'},
+    {name:'靠背',category:'plastic',material:'PP',weight:500,qty:1,plasticType:'PP',spec:'450*400'},
+    {name:'椅腿',category:'metal_assembly',material:'Q235钢',weight:400,qty:4,holeCount:2,surface:'spray',outerDia:25,pipeLen:450,spec:'25*450'},
+    {name:'横撑',category:'metal_sheet',material:'Q235钢',weight:200,qty:4,spec:'20*20*400'},
+    {name:'座垫海绵',category:'purchased',purchType:'other',qty:1,fixedPrice:8,material:'高密度海绵'},
+    {name:'面料',category:'purchased',purchType:'other',qty:1,fixedPrice:6,material:'PU皮革/网布'},
+    {name:'气压棒',category:'purchased',purchType:'other',qty:1,fixedPrice:12,material:'钢+氮气'},
+    {name:'脚轮',category:'standard',qty:5,stdUnitPrice:2,material:'PA+PU'},
+    {name:'脚垫',category:'plastic',material:'TPE',weight:10,qty:4,plasticType:'PP'},
+    {name:'螺丝',category:'standard',qty:16,stdUnitPrice:0.07,material:'Q235'},
+  ],
+  // ==================== 灯具/照明 ====================
+  '灯|照明|light|lamp|LED|吸顶|壁灯|台灯|落地灯|solar light|太阳能灯':[
+    {name:'灯罩/灯壳',category:'plastic',material:'PC',weight:200,qty:1,plasticType:'PC',spec:'300*300'},
+    {name:'底座/灯座',category:'metal_assembly',material:'铝合金',weight:300,qty:1,holeCount:4,surface:'anodize',outerDia:150,pipeLen:50,spec:'150*50'},
+    {name:'灯臂/支架',category:'metal_sheet',material:'铝管',weight:200,qty:1,surface:'spray',outerDia:20,pipeLen:500,spec:'20*500'},
+    {name:'LED灯板',category:'purchased',purchType:'other',qty:1,fixedPrice:8,material:'PCB+LED'},
+    {name:'驱动电源',category:'purchased',purchType:'other',qty:1,fixedPrice:5,material:'电子元件'},
+    {name:'开关/调光器',category:'purchased',purchType:'other',qty:1,fixedPrice:2,material:'电子元件'},
+    {name:'螺丝',category:'standard',qty:8,stdUnitPrice:0.05,material:'Q235'},
+    {name:'线材+插头',category:'purchased',purchType:'other',qty:1,fixedPrice:3,material:'铜芯线+插头'},
+  ],
+  // ==================== 户外/花园/庭院 ====================
+  '花园|园艺|户外|庭院|花盆|种植|garden|outdoor|planter|raised bed|花架|晾衣':[
+    {name:'主体框架',category:'metal_assembly',material:'镀锌钢',weight:3000,qty:1,holeCount:12,surface:'spray',outerDia:30,pipeLen:1200,spec:'1200*600*800'},
+    {name:'面板/层板',category:'metal_sheet',material:'镀锌钢',weight:1000,qty:2,holeCount:6,surface:'spray',spec:'600*400'},
+    {name:'支腿',category:'metal_sheet',material:'镀锌钢',weight:500,qty:4,holeCount:2,surface:'spray',outerDia:25,pipeLen:800},
+    {name:'塑料配件',category:'plastic',material:'PP',weight:30,qty:4,plasticType:'PP'},
+    {name:'螺丝',category:'standard',qty:24,stdUnitPrice:0.10,material:'不锈钢',spec:'M5*16'},
+    {name:'脚垫/地钉',category:'standard',qty:4,stdUnitPrice:0.5,material:'Q235钢'},
+  ],
+  // ==================== 厨房/卫浴 ====================
+  '厨房|卫浴|浴室|厨具|水槽|龙头|毛巾|kitchen|bath|faucet|towel|soap|垃圾桶|trash':[
+    {name:'主体',category:'metal_assembly',material:'不锈钢304',weight:600,qty:1,holeCount:6,spec:'300*200*200'},
+    {name:'面板/盖板',category:'metal_sheet',material:'不锈钢304',weight:300,qty:1,holeCount:4,spec:'300*200'},
+    {name:'底座/底盘',category:'plastic',material:'PP',weight:150,qty:1,plasticType:'PP'},
+    {name:'密封圈',category:'purchased',purchType:'other',qty:2,fixedPrice:0.5,material:'硅橡胶'},
+    {name:'螺丝',category:'standard',qty:8,stdUnitPrice:0.10,material:'不锈钢304'},
+    {name:'脚垫',category:'plastic',material:'TPE',weight:8,qty:4,plasticType:'PP'},
+  ],
+  // ==================== 工具/五金 ====================
+  '工具|扳手|钳|锯|toolbox|tool cart|工具箱|工具车|wrench|plier|手推车|trolley':[
+    {name:'箱体/车架',category:'metal_assembly',material:'冷轧板',weight:5000,qty:1,holeCount:16,surface:'spray',outerDia:500,pipeLen:700,spec:'500*300*700',remark:'折弯焊接'},
+    {name:'抽屉',category:'metal_sheet',material:'冷轧板',weight:800,qty:3,holeCount:2,surface:'spray',spec:'450*250*100'},
+    {name:'抽屉滑轨',category:'purchased',purchType:'other',qty:6,fixedPrice:5,material:'镀锌钢'},
+    {name:'轮子',category:'standard',qty:4,stdUnitPrice:5,material:'PA+橡胶'},
+    {name:'拉手',category:'standard',qty:3,stdUnitPrice:1.5,material:'锌合金'},
+    {name:'锁',category:'standard',qty:1,stdUnitPrice:5,material:'锌合金'},
+    {name:'螺丝',category:'standard',qty:30,stdUnitPrice:0.07,material:'Q235'},
+    {name:'橡胶垫',category:'purchased',purchType:'other',qty:3,fixedPrice:1,material:'橡胶'},
+  ],
+  // ==================== 衣架/晾衣架/衣帽架 ====================
+  '衣架|晾衣|衣帽架|coat rack|drying rack|clothes rack|hanger|garment rack':[
+    {name:'立柱',category:'metal_assembly',material:'Q235钢',weight:400,qty:2,holeCount:6,surface:'spray',outerDia:25,pipeLen:1500,spec:'25*1500'},
+    {name:'横杆',category:'metal_sheet',material:'Q235钢',weight:300,qty:2,holeCount:0,surface:'spray',outerDia:25,pipeLen:1000,spec:'25*1000'},
+    {name:'底座/支脚',category:'metal_sheet',material:'Q235钢',weight:600,qty:2,holeCount:4,surface:'spray',spec:'400*400'},
+    {name:'挂钩',category:'standard',qty:8,stdUnitPrice:0.3,material:'Q235钢'},
+    {name:'连接件',category:'plastic',material:'PP',weight:15,qty:4,plasticType:'PP'},
+    {name:'螺丝',category:'standard',qty:12,stdUnitPrice:0.07,material:'Q235'},
+    {name:'脚垫',category:'plastic',material:'TPE',weight:10,qty:4,plasticType:'PP'},
+  ],
+  // ==================== 健身/运动器材 ====================
+  '健身|哑铃|杠铃|拉力|跑步|exercise|fitness|gym|dumbbell|weight|pull up|workout':[
+    {name:'主体框架',category:'metal_assembly',material:'Q235钢',weight:8000,qty:1,holeCount:20,surface:'spray',outerDia:50,pipeLen:2000,spec:'50*50方管焊接'},
+    {name:'横杠/把手',category:'metal_sheet',material:'Q235钢',weight:1000,qty:2,holeCount:0,surface:'spray',outerDia:32,pipeLen:1200,spec:'32*1200'},
+    {name:'靠垫',category:'purchased',purchType:'other',qty:1,fixedPrice:10,material:'PU皮革+海绵'},
+    {name:'脚垫',category:'purchased',purchType:'other',qty:4,fixedPrice:1,material:'橡胶'},
+    {name:'拉力绳/配件',category:'purchased',purchType:'other',qty:2,fixedPrice:5,material:'乳胶管+塑料把手'},
+    {name:'螺丝',category:'standard',qty:20,stdUnitPrice:0.15,material:'Q235',spec:'M8*25'},
+    {name:'防滑套',category:'purchased',purchType:'other',qty:2,fixedPrice:1.5,material:'NBR海绵'},
+  ],
+  // ==================== 收纳盒/整理箱 (塑料为主) ====================
+  '收纳盒|整理箱|储物箱|plastic bin|container|tote|stackable|box|分隔|drawer organizer':[
+    {name:'箱体',category:'plastic',material:'PP',weight:600,qty:1,plasticType:'PP',spec:'400*300*200'},
+    {name:'盖子',category:'plastic',material:'PP',weight:200,qty:1,plasticType:'PP',spec:'400*300'},
+    {name:'卡扣/锁扣',category:'plastic',material:'PP',weight:10,qty:2,plasticType:'PP'},
+    {name:'轮子(可选)',category:'standard',qty:4,stdUnitPrice:1,material:'PA'},
+    {name:'把手',category:'plastic',material:'PP',weight:20,qty:2,plasticType:'PP'},
+    {name:'标签框',category:'plastic',material:'PS',weight:5,qty:1,plasticType:'PP'},
+  ],
+};
+
+// 通用包装模板(根据总重量估算)
+function bomGenPackaging(totalWeight,maxDim){
+  const pkgs=[];
+  const l=Math.max(maxDim||800,400), w=Math.round(l*0.6), h=Math.round(l*0.15);
+  pkgs.push({name:'纸箱',category:'purchased',purchType:'carton',qty:1,pLen:l,pWid:w,pHei:h,areaPrice:5,purchMatRatio:0.7,material:'BC瓦楞',spec:`${l}*${w}*${h}`});
+  pkgs.push({name:'塑料袋',category:'purchased',purchType:'plastic_bag',qty:1,pLen:l,pWid:w,purchMatRatio:0.51,material:'PE'});
+  if(totalWeight>2000) pkgs.push({name:'气泡袋',category:'purchased',purchType:'bubble_wrap',qty:2,pLen:Math.round(l*0.4),pWid:Math.round(w*0.8),purchMatRatio:0.51,material:'PE'});
+  pkgs.push({name:'说明书',category:'purchased',purchType:'manual',qty:1,fixedPrice:0.5,purchMatRatio:0.7});
+  return pkgs;
+}
+
+// ===== 扩展产品知识库 =====
+var PRODUCT_KB2 = {
+  '耳机|earphone|headphone|headset|TWS|蓝牙耳机|降噪耳机|头戴耳机|入耳式':[
+    {name:'耳机外壳(左)',category:'plastic',material:'PC+ABS',weight:8,qty:1,plasticType:'ABS',spec:'25*22*18'},
+    {name:'耳机外壳(右)',category:'plastic',material:'PC+ABS',weight:8,qty:1,plasticType:'ABS',spec:'25*22*18'},
+    {name:'喇叭单元',category:'purchased',purchType:'other',qty:2,fixedPrice:3.5,material:'钕磁铁+振膜'},
+    {name:'蓝牙主板(含芯片)',category:'purchased',purchType:'other',qty:1,fixedPrice:8,material:'PCB+IC+天线'},
+    {name:'电池(单耳)',category:'purchased',purchType:'other',qty:2,fixedPrice:1.5,material:'锂聚合物电池 50mAh'},
+    {name:'硅胶耳套',category:'plastic',material:'硅胶',weight:2,qty:6,plasticType:'PP',spec:'S/M/L各2'},
+    {name:'充电触点',category:'purchased',purchType:'other',qty:2,fixedPrice:0.3,material:'铜合金镀金'},
+    {name:'麦克风',category:'purchased',purchType:'other',qty:2,fixedPrice:0.8,material:'MEMS硅麦'},
+    {name:'充电仓外壳',category:'plastic',material:'PC+ABS',weight:35,qty:1,plasticType:'ABS',spec:'65*50*30'},
+    {name:'充电仓电池',category:'purchased',purchType:'other',qty:1,fixedPrice:3,material:'锂电池 400mAh'},
+    {name:'充电仓主板',category:'purchased',purchType:'other',qty:1,fixedPrice:2.5,material:'PCB+Type-C座'},
+    {name:'磁铁(仓盖吸附)',category:'purchased',purchType:'other',qty:4,fixedPrice:0.1,material:'钕铁硼'},
+    {name:'LED指示灯',category:'purchased',purchType:'other',qty:2,fixedPrice:0.05,material:'LED'},
+    {name:'Type-C充电线',category:'purchased',purchType:'other',qty:1,fixedPrice:0.8,material:'铜芯线'},
+    {name:'螺丝',category:'standard',qty:6,stdUnitPrice:0.02,material:'不锈钢'},
+  ],
+  '充电宝|移动电源|power bank|充电器|快充':[
+    {name:'外壳上盖',category:'plastic',material:'PC+ABS',weight:45,qty:1,plasticType:'ABS',spec:'130*68*15'},
+    {name:'外壳下盖',category:'plastic',material:'PC+ABS',weight:45,qty:1,plasticType:'ABS',spec:'130*68*15'},
+    {name:'锂电芯',category:'purchased',purchType:'other',qty:2,fixedPrice:12,material:'18650锂电池 2600mAh'},
+    {name:'主控电路板',category:'purchased',purchType:'other',qty:1,fixedPrice:5,material:'PCB+主控IC+MOS管'},
+    {name:'Type-C输入口',category:'purchased',purchType:'other',qty:1,fixedPrice:0.3,material:'Type-C母座'},
+    {name:'USB-A输出口',category:'purchased',purchType:'other',qty:2,fixedPrice:0.2,material:'USB-A母座'},
+    {name:'LED显示屏/指示灯',category:'purchased',purchType:'other',qty:1,fixedPrice:0.8,material:'LED数码管'},
+    {name:'按钮开关',category:'purchased',purchType:'other',qty:1,fixedPrice:0.15,material:'硅胶+铜触点'},
+    {name:'导线/排线',category:'purchased',purchType:'other',qty:1,fixedPrice:0.3,material:'铜芯线'},
+    {name:'螺丝',category:'standard',qty:4,stdUnitPrice:0.03,material:'不锈钢',spec:'M1.6*4'},
+    {name:'硅胶脚垫',category:'plastic',material:'硅胶',weight:2,qty:4,plasticType:'PP'},
+    {name:'充电线',category:'purchased',purchType:'other',qty:1,fixedPrice:0.8,material:'Type-C'},
+  ],
+  '手机壳|手机套|phone case|保护壳|保护套|手机支架':[
+    {name:'外壳主体',category:'plastic',material:'TPU',weight:28,qty:1,plasticType:'PP',spec:'155*78*12'},
+    {name:'PC背板',category:'plastic',material:'PC',weight:15,qty:1,plasticType:'PC',spec:'150*73*1'},
+    {name:'按键套',category:'plastic',material:'硅胶',weight:1,qty:3,plasticType:'PP'},
+    {name:'防尘塞',category:'plastic',material:'硅胶',weight:0.5,qty:1,plasticType:'PP'},
+    {name:'镜头保护圈',category:'metal_sheet',material:'铝合金',weight:2,qty:1,spec:'直径35'},
+  ],
+  '音箱|音响|speaker|蓝牙音箱|便携音箱|智能音箱':[
+    {name:'外壳(上盖)',category:'plastic',material:'ABS',weight:80,qty:1,plasticType:'ABS',spec:'180*70*70'},
+    {name:'外壳(底壳)',category:'plastic',material:'ABS',weight:100,qty:1,plasticType:'ABS',spec:'180*70*30'},
+    {name:'网罩/布面',category:'purchased',purchType:'other',qty:1,fixedPrice:2,material:'金属网/织物'},
+    {name:'全频喇叭单元',category:'purchased',purchType:'other',qty:1,fixedPrice:6,material:'钕磁铁+纸盆'},
+    {name:'被动振膜',category:'purchased',purchType:'other',qty:1,fixedPrice:1.5,material:'橡胶+金属配重'},
+    {name:'蓝牙功放板',category:'purchased',purchType:'other',qty:1,fixedPrice:8,material:'PCB+蓝牙IC+D类功放'},
+    {name:'锂电池',category:'purchased',purchType:'other',qty:1,fixedPrice:6,material:'锂聚合物 1800mAh'},
+    {name:'按键硅胶套',category:'plastic',material:'硅胶',weight:3,qty:1,plasticType:'PP'},
+    {name:'Type-C充电口',category:'purchased',purchType:'other',qty:1,fixedPrice:0.3,material:'Type-C母座'},
+    {name:'防滑硅胶垫',category:'plastic',material:'硅胶',weight:5,qty:1,plasticType:'PP'},
+    {name:'螺丝',category:'standard',qty:8,stdUnitPrice:0.03,material:'不锈钢'},
+    {name:'充电线',category:'purchased',purchType:'other',qty:1,fixedPrice:0.8,material:'Type-C'},
+  ],
+  '滑板车|电动滑板车|scooter|electric scooter|平衡车|电动车':[
+    {name:'车架/踏板',category:'metal_assembly',material:'铝合金6061',weight:2500,qty:1,holeCount:12,surface:'anodize',spec:'1000*140*3'},
+    {name:'立管/车把立柱',category:'metal_assembly',material:'铝合金',weight:800,qty:1,holeCount:4,surface:'anodize',outerDia:35,pipeLen:950},
+    {name:'车把横杆',category:'metal_sheet',material:'铝合金',weight:300,qty:1,surface:'anodize',outerDia:22,pipeLen:420},
+    {name:'折叠器',category:'metal_assembly',material:'铝合金+不锈钢',weight:350,qty:1,holeCount:6},
+    {name:'前轮(含轮毂电机)',category:'purchased',purchType:'other',qty:1,fixedPrice:65,material:'铝轮毂+无刷电机350W'},
+    {name:'后轮',category:'purchased',purchType:'other',qty:1,fixedPrice:12,material:'实心橡胶+铝轮毂',spec:'8.5寸'},
+    {name:'锂电池组',category:'purchased',purchType:'other',qty:1,fixedPrice:120,material:'18650锂电池 36V 7.8Ah'},
+    {name:'控制器',category:'purchased',purchType:'other',qty:1,fixedPrice:18,material:'PCB+MOS管+MCU'},
+    {name:'LED显示屏',category:'purchased',purchType:'other',qty:1,fixedPrice:5,material:'液晶屏+PCB'},
+    {name:'刹车碟片+卡钳',category:'purchased',purchType:'other',qty:1,fixedPrice:8,material:'不锈钢碟片+铝卡钳'},
+    {name:'刹车线',category:'purchased',purchType:'other',qty:1,fixedPrice:1.5,material:'钢丝绳'},
+    {name:'前后挡泥板',category:'plastic',material:'PP',weight:120,qty:2,plasticType:'PP'},
+    {name:'把套',category:'plastic',material:'TPR',weight:50,qty:2,plasticType:'PP'},
+    {name:'尾灯+前灯',category:'purchased',purchType:'other',qty:2,fixedPrice:2,material:'LED+PCB'},
+    {name:'螺丝螺母',category:'standard',qty:30,stdUnitPrice:0.10,material:'不锈钢304'},
+    {name:'快拆杆',category:'standard',qty:2,stdUnitPrice:0.5,material:'Q235钢'},
+  ],
+  '摄像头|监控|camera|webcam|安防|门铃|doorbell|行车记录仪|dashcam':[
+    {name:'外壳(前盖)',category:'plastic',material:'ABS',weight:30,qty:1,plasticType:'ABS',spec:'80*80*40'},
+    {name:'外壳(后盖)',category:'plastic',material:'ABS',weight:25,qty:1,plasticType:'ABS'},
+    {name:'镜头模组',category:'purchased',purchType:'other',qty:1,fixedPrice:12,material:'玻璃镜片+CMOS传感器'},
+    {name:'主板',category:'purchased',purchType:'other',qty:1,fixedPrice:15,material:'PCB+主控SoC+WiFi模块'},
+    {name:'红外LED板',category:'purchased',purchType:'other',qty:1,fixedPrice:2,material:'PCB+IR LED'},
+    {name:'SD卡槽',category:'purchased',purchType:'other',qty:1,fixedPrice:0.3,material:'金属弹片'},
+    {name:'麦克风+扬声器',category:'purchased',purchType:'other',qty:1,fixedPrice:1.5,material:'MEMS+小喇叭'},
+    {name:'散热片',category:'metal_sheet',material:'铝合金',weight:8,qty:1,spec:'40*30*5'},
+    {name:'电源适配器',category:'purchased',purchType:'other',qty:1,fixedPrice:3,material:'5V2A适配器'},
+    {name:'安装支架',category:'plastic',material:'ABS',weight:20,qty:1,plasticType:'ABS'},
+    {name:'螺丝+膨胀螺栓',category:'standard',qty:6,stdUnitPrice:0.10,material:'不锈钢'},
+    {name:'网线/USB线',category:'purchased',purchType:'other',qty:1,fixedPrice:1,material:'铜芯线'},
+  ],
+  '喂食器|自动喂食|pet feeder|饮水机|宠物饮水|pet fountain|自动猫砂盆':[
+    {name:'主体外壳(上盖)',category:'plastic',material:'ABS',weight:200,qty:1,plasticType:'ABS',spec:'300*200*250'},
+    {name:'主体外壳(底座)',category:'plastic',material:'ABS',weight:250,qty:1,plasticType:'ABS'},
+    {name:'储粮桶/水箱',category:'plastic',material:'PP(食品级)',weight:150,qty:1,plasticType:'PP',spec:'200*200*200'},
+    {name:'出粮口/出水口',category:'plastic',material:'PP',weight:30,qty:1,plasticType:'PP'},
+    {name:'食盆/水盘',category:'plastic',material:'PP(食品级)',weight:80,qty:1,plasticType:'PP',spec:'直径150'},
+    {name:'电机+齿轮组',category:'purchased',purchType:'other',qty:1,fixedPrice:5,material:'微型减速电机'},
+    {name:'控制板(含WiFi)',category:'purchased',purchType:'other',qty:1,fixedPrice:10,material:'PCB+MCU+WiFi'},
+    {name:'LCD显示屏',category:'purchased',purchType:'other',qty:1,fixedPrice:3,material:'LCD段码屏'},
+    {name:'按钮',category:'purchased',purchType:'other',qty:3,fixedPrice:0.15,material:'硅胶+铜触点'},
+    {name:'电源适配器',category:'purchased',purchType:'other',qty:1,fixedPrice:3,material:'5V2A'},
+    {name:'硅胶密封圈',category:'plastic',material:'硅胶',weight:5,qty:2,plasticType:'PP'},
+    {name:'防滑脚垫',category:'plastic',material:'TPE',weight:8,qty:4,plasticType:'PP'},
+    {name:'螺丝',category:'standard',qty:10,stdUnitPrice:0.05,material:'不锈钢304'},
+  ],
+  '车载|car mount|手机架|车充|car charger|遮阳|车载香薰':[
+    {name:'夹持臂/支架主体',category:'plastic',material:'PC+ABS',weight:60,qty:1,plasticType:'ABS',spec:'100*80*40'},
+    {name:'底座/吸盘',category:'plastic',material:'TPU+ABS',weight:40,qty:1,plasticType:'ABS'},
+    {name:'球头关节',category:'metal_assembly',material:'锌合金',weight:20,qty:1,spec:'直径17'},
+    {name:'硅胶防滑垫',category:'plastic',material:'硅胶',weight:3,qty:2,plasticType:'PP'},
+    {name:'弹簧',category:'standard',qty:2,stdUnitPrice:0.15,material:'弹簧钢'},
+    {name:'螺丝',category:'standard',qty:4,stdUnitPrice:0.03,material:'不锈钢'},
+  ],
+  '空气炸锅|炸锅|air fryer|烤箱|oven|微波|电饭|rice cooker|电热壶|kettle|咖啡机|coffee':[
+    {name:'外壳',category:'plastic',material:'PP(耐热)',weight:600,qty:1,plasticType:'PP',spec:'350*280*320'},
+    {name:'内胆/炸篮',category:'metal_sheet',material:'铝合金(不粘涂层)',weight:400,qty:1,spec:'直径200*深130'},
+    {name:'加热管',category:'purchased',purchType:'other',qty:1,fixedPrice:8,material:'不锈钢电热管 1500W'},
+    {name:'风扇电机',category:'purchased',purchType:'other',qty:1,fixedPrice:6,material:'铜线圈电机'},
+    {name:'温控器',category:'purchased',purchType:'other',qty:1,fixedPrice:2,material:'NTC+控制IC'},
+    {name:'控制板(含定时)',category:'purchased',purchType:'other',qty:1,fixedPrice:8,material:'PCB+MCU+触摸面板'},
+    {name:'电源线+插头',category:'purchased',purchType:'other',qty:1,fixedPrice:2.5,material:'铜芯线+三脚插头'},
+    {name:'隔热棉',category:'purchased',purchType:'other',qty:1,fixedPrice:1.5,material:'玻纤隔热棉'},
+    {name:'把手',category:'plastic',material:'电木/PA',weight:80,qty:1,plasticType:'PA'},
+    {name:'防滑脚垫',category:'plastic',material:'硅胶',weight:10,qty:4,plasticType:'PP'},
+    {name:'螺丝',category:'standard',qty:12,stdUnitPrice:0.07,material:'不锈钢304'},
+  ],
+  '台灯|desk lamp|护眼灯|夹灯|night light|小夜灯|感应灯|灯带|light strip|LED strip':[
+    {name:'灯头/灯罩',category:'plastic',material:'PC(导光)',weight:60,qty:1,plasticType:'PC',spec:'直径120'},
+    {name:'灯臂',category:'metal_sheet',material:'铝合金',weight:150,qty:1,surface:'anodize',outerDia:12,pipeLen:400},
+    {name:'底座',category:'metal_assembly',material:'铁(配重)',weight:500,qty:1,holeCount:2,surface:'spray',spec:'直径150'},
+    {name:'LED灯板',category:'purchased',purchType:'other',qty:1,fixedPrice:5,material:'PCB+LED灯珠'},
+    {name:'恒流驱动板',category:'purchased',purchType:'other',qty:1,fixedPrice:3,material:'PCB+IC'},
+    {name:'开关/触摸调光',category:'purchased',purchType:'other',qty:1,fixedPrice:1.5,material:'触摸IC+电容'},
+    {name:'USB接口',category:'purchased',purchType:'other',qty:1,fixedPrice:0.3,material:'Type-C座'},
+    {name:'导线',category:'purchased',purchType:'other',qty:1,fixedPrice:0.5,material:'铜芯线'},
+    {name:'螺丝',category:'standard',qty:6,stdUnitPrice:0.05,material:'不锈钢'},
+    {name:'硅胶脚垫',category:'plastic',material:'硅胶',weight:5,qty:3,plasticType:'PP'},
+  ],
+  '背包|书包|旅行箱|行李箱|luggage|backpack|拉杆箱|收纳包|化妆包|pencil case':[
+    {name:'面料(外层)',category:'purchased',purchType:'other',qty:1,fixedPrice:15,material:'600D涤纶/牛津布'},
+    {name:'里布',category:'purchased',purchType:'other',qty:1,fixedPrice:4,material:'210D涤纶'},
+    {name:'拉链(主仓)',category:'purchased',purchType:'other',qty:1,fixedPrice:2,material:'尼龙拉链+锌合金拉头'},
+    {name:'拉链(副仓)',category:'purchased',purchType:'other',qty:2,fixedPrice:1,material:'尼龙拉链'},
+    {name:'肩带',category:'purchased',purchType:'other',qty:2,fixedPrice:3,material:'尼龙织带+海绵+网布'},
+    {name:'背垫',category:'purchased',purchType:'other',qty:1,fixedPrice:3,material:'EVA+网布'},
+    {name:'扣具(插扣+日字扣)',category:'standard',qty:6,stdUnitPrice:0.3,material:'POM'},
+    {name:'提手',category:'purchased',purchType:'other',qty:1,fixedPrice:0.8,material:'尼龙织带+PU皮'},
+    {name:'缝纫线',category:'purchased',purchType:'other',qty:1,fixedPrice:0.3,material:'涤纶线'},
+    {name:'标签/吊牌',category:'purchased',purchType:'other',qty:1,fixedPrice:0.3,material:'纸+织唛'},
+  ],
+  '水杯|保温杯|水壶|bottle|tumbler|杯子|马克杯|mug':[
+    {name:'外壳(不锈钢)',category:'metal_sheet',material:'不锈钢304',weight:200,qty:1,holeCount:0,spec:'直径75*高220'},
+    {name:'内胆',category:'metal_sheet',material:'不锈钢316',weight:150,qty:1,spec:'直径68*高210'},
+    {name:'杯盖',category:'plastic',material:'PP(食品级)',weight:30,qty:1,plasticType:'PP'},
+    {name:'密封圈',category:'plastic',material:'硅胶(食品级)',weight:5,qty:2,plasticType:'PP'},
+    {name:'杯底垫',category:'plastic',material:'硅胶',weight:10,qty:1,plasticType:'PP'},
+    {name:'真空焊接',category:'purchased',purchType:'other',qty:1,fixedPrice:1.5,material:'真空钎焊',remark:'抽真空工艺'},
+  ],
+};
+
+function bomAiAnalyze(){
+  var el=document.getElementById('bom-pname');
+  if(el&&el.value.trim()) bomProductName=el.value.trim();
+  var name=bomProductName.trim();
+  if(!name){alert('请先输入产品名称');return;}
+
+  // Search both KB and KB2
+  var matched=null, bestScore=0;
+  var allKB = Object.assign({}, PRODUCT_KB, PRODUCT_KB2);
+  for(const[pattern,parts] of Object.entries(allKB)){
+    const keywords=pattern.split('|');let score=0;
+    keywords.forEach(kw=>{if(name.toLowerCase().includes(kw.toLowerCase()))score+=kw.length;});
+    if(score>bestScore){bestScore=score;matched=parts;}
+  }
+  if(matched&&bestScore>=2){_bomApply(matched);return;}
+
+  // Try Claude API
+  var btn=el?el.parentElement.parentElement.querySelector('.bom-btn.primary'):null;
+  if(btn){btn.disabled=true;btn.innerHTML='⏳ AI拆解中...';}
+  fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2000,messages:[{role:"user",
+    content:"你是专业产品BOM拆解工程师。将产品拆解为详细BOM。\n产品："+name+"\n严格按JSON数组返回，不要其他文字和markdown：\n[{\"name\":\"零件名\",\"category\":\"metal_assembly|metal_sheet|plastic|standard|purchased\",\"material\":\"具体材料\",\"weight\":克重,\"qty\":数量,\"spec\":\"规格\",\"remark\":\"工艺\"}]\nstandard加stdUnitPrice,purchased纸箱加purchType:carton+pLen+pWid+pHei+areaPrice:5,其他外购件加purchType:other+fixedPrice。拆到最小零件8-20个,含紧固件和包装。只返回JSON。"}]})
+  }).then(r=>r.json()).then(data=>{
+    if(btn){btn.disabled=false;btn.innerHTML='⚡ 智能拆解';}
+    var t=data.content&&data.content[0]&&data.content[0].text;
+    if(!t){_bomSmartFallback(name);return;}
+    try{t=t.replace(/```json\s*/g,'').replace(/```\s*/g,'').trim();
+      var p=JSON.parse(t);if(Array.isArray(p)&&p.length>0)_bomApply(p);else _bomSmartFallback(name);
+    }catch(e){_bomSmartFallback(name);}
+  }).catch(()=>{if(btn){btn.disabled=false;btn.innerHTML='⚡ 智能拆解';}_bomSmartFallback(name);});
+}
+
+function _bomSmartFallback(name){
+  var n=name.toLowerCase();
+  // 根据产品名智能判断材质体系
+  var isElectric=/(电|充|蓝牙|wifi|智能|usb|电子|数码|led|lcd|battery|sensor|motor|camera|speaker)/.test(n);
+  var isPlastic=/(塑料|硅胶|收纳|盒|箱|桶|壶|杯|碗|盘|玩具|toy)/.test(n);
+  var isFabric=/(包|袋|布|套|罩|帐篷|背包|bag|tent|cover|case|服|衣|鞋|帽)/.test(n);
+  var isMetal=/(钢|铁|铝|金属|metal|架|杆|管|tool|wrench|刀|剪)/.test(n);
+
+  var parts=[];
+  if(isElectric){
+    parts=[
+      {name:'外壳(上盖)',category:'plastic',material:'ABS',weight:60,qty:1,plasticType:'ABS'},
+      {name:'外壳(下盖)',category:'plastic',material:'ABS',weight:60,qty:1,plasticType:'ABS'},
+      {name:'主控电路板',category:'purchased',purchType:'other',qty:1,fixedPrice:10,material:'PCB+IC'},
+      {name:'电池/电源',category:'purchased',purchType:'other',qty:1,fixedPrice:5,material:'锂电池'},
+      {name:'显示/指示',category:'purchased',purchType:'other',qty:1,fixedPrice:2,material:'LED/LCD'},
+      {name:'连接线/接口',category:'purchased',purchType:'other',qty:1,fixedPrice:1,material:'Type-C/线材'},
+      {name:'按钮/开关',category:'purchased',purchType:'other',qty:2,fixedPrice:0.2,material:'硅胶按键'},
+      {name:'硅胶脚垫',category:'plastic',material:'硅胶',weight:3,qty:4,plasticType:'PP'},
+      {name:'螺丝',category:'standard',qty:8,stdUnitPrice:0.03,material:'不锈钢'},
+    ];
+  } else if(isPlastic){
+    parts=[
+      {name:'主体',category:'plastic',material:'PP',weight:300,qty:1,plasticType:'PP'},
+      {name:'盖子/配件',category:'plastic',material:'PP',weight:100,qty:1,plasticType:'PP'},
+      {name:'密封圈',category:'plastic',material:'硅胶',weight:5,qty:2,plasticType:'PP'},
+      {name:'卡扣/连接件',category:'plastic',material:'PP',weight:10,qty:4,plasticType:'PP'},
+      {name:'标签',category:'purchased',purchType:'other',qty:1,fixedPrice:0.3,material:'不干胶'},
+    ];
+  } else if(isFabric){
+    parts=[
+      {name:'主面料',category:'purchased',purchType:'other',qty:1,fixedPrice:12,material:'涤纶/牛津布'},
+      {name:'里布',category:'purchased',purchType:'other',qty:1,fixedPrice:3,material:'涤纶'},
+      {name:'拉链',category:'purchased',purchType:'other',qty:2,fixedPrice:1.5,material:'尼龙拉链'},
+      {name:'扣具',category:'standard',qty:4,stdUnitPrice:0.3,material:'POM塑料'},
+      {name:'织带/肩带',category:'purchased',purchType:'other',qty:1,fixedPrice:2,material:'尼龙织带'},
+      {name:'填充物/衬垫',category:'purchased',purchType:'other',qty:1,fixedPrice:2,material:'EVA/海绵'},
+      {name:'缝纫线',category:'purchased',purchType:'other',qty:1,fixedPrice:0.3,material:'涤纶线'},
+    ];
+  } else if(isMetal){
+    parts=[
+      {name:'主体框架',category:'metal_assembly',material:'Q235钢',weight:2000,qty:1,holeCount:12,surface:'spray',outerDia:30,pipeLen:800},
+      {name:'面板/配件',category:'metal_sheet',material:'Q235钢',weight:500,qty:2,holeCount:4,surface:'spray',spec:'300*200'},
+      {name:'塑料配件',category:'plastic',material:'PP',weight:30,qty:4,plasticType:'PP'},
+      {name:'螺丝',category:'standard',qty:16,stdUnitPrice:0.07,material:'Q235'},
+      {name:'脚垫',category:'plastic',material:'TPE',weight:10,qty:4,plasticType:'PP'},
+    ];
+  } else {
+    // 综合类：塑料+少量金属+少量电子
+    parts=[
+      {name:'外壳/主体',category:'plastic',material:'ABS',weight:150,qty:1,plasticType:'ABS'},
+      {name:'内部结构',category:'plastic',material:'PP',weight:80,qty:1,plasticType:'PP'},
+      {name:'金属件/支架',category:'metal_sheet',material:'Q235钢',weight:100,qty:1,holeCount:2,spec:'100*50'},
+      {name:'橡胶/硅胶件',category:'plastic',material:'TPE',weight:15,qty:2,plasticType:'PP'},
+      {name:'螺丝',category:'standard',qty:8,stdUnitPrice:0.05,material:'不锈钢'},
+    ];
+  }
+  _bomApply(parts);
+}
+
+function _bomApply(parts){
+  let tw=0,md=0;
+  bomItems=parts.map(p=>{const it=bomNewItem(p.category||'metal_sheet');Object.assign(it,{id:bomIdCounter++});
+    for(const k of Object.keys(p))it[k]=p[k];
+    if(p.weight)it.weight=String(p.weight);
+    if(['metal_assembly','metal_sheet','plastic'].includes(it.category)){const ap=bomAutoPrice(it.material);if(ap>0)it.matPrice=ap;}
+    if(p.stdUnitPrice)it.stdUnitPrice=p.stdUnitPrice;if(p.fixedPrice)it.fixedPrice=p.fixedPrice;
+    if(p.purchType)it.purchType=p.purchType;if(p.pLen)it.pLen=p.pLen;if(p.pWid)it.pWid=p.pWid;if(p.pHei)it.pHei=p.pHei;
+    tw+=(parseFloat(it.weight)||0)*(parseFloat(it.qty)||1);
+    if(it.spec)it.spec.split(/[*xX×]/).forEach(d=>{const n=parseFloat(d);if(n>md)md=n;});
+    return it;});
+  if(!bomItems.some(it=>it.category==='purchased'&&(it.purchType==='carton'||it.name.includes('纸箱')))){
+    bomGenPackaging(tw,md).forEach(p=>{const it=bomNewItem('purchased');Object.assign(it,p,{id:bomIdCounter++});bomItems.push(it);});}
+  bomView='edit';renderBom();
+}
+
+// BOM Templates
+const BOM_TPL = {
+  '泳池围栏门':[
+    {name:'门框',category:'metal_assembly',material:'铝合金',weight:'1200',qty:1,matPrice:25.5,lossRate:0.03,holeCount:36,otherFee:0.3,spec:'820*1205'},
+    {name:'立柱压条',category:'metal_sheet',material:'铝管',weight:'100',qty:2,matPrice:26,wallThick:'1.4',holeCount:11,surface:'spray',outerDia:'4.5',pipeLen:'1170',spec:'14.4*4.5*1170'},
+    {name:'网格',category:'plastic',material:'PVC',weight:'385',qty:1,matPrice:6.8,plasticType:'PVC',spec:'750*1165'},
+    {name:'左右立柱',category:'metal_assembly',material:'铝合金+PP+不锈钢',weight:'1590',qty:2,matPrice:25,lossRate:0.03,holeCount:9,surface:'spray',outerDia:'110',pipeLen:'1367',spec:'110*1367'},
+    {name:'螺钉',category:'standard',qty:18,stdUnitPrice:0.07,stdMatRatio:0.52,spec:'ST3.8*12',material:'Q235'},
+    {name:'纸箱',category:'purchased',purchType:'carton',qty:1,pLen:1325,pWid:815,pHei:80,areaPrice:5,purchMatRatio:0.7,spec:'1325*815*80',material:'BC瓦楞'},
+    {name:'塑料袋',category:'purchased',purchType:'plastic_bag',qty:1,pLen:1325,pWid:815,purchMatRatio:0.51,material:'PE'},
+    {name:'说明书',category:'purchased',purchType:'manual',qty:1,fixedPrice:0.5,purchMatRatio:0.7},
+  ],
+};
+
+function bomLoadTpl(name){
+  const tpl=BOM_TPL[name];
+  if(!tpl)return;
+  bomItems=tpl.map(t=>{const n=bomNewItem(t.category);return Object.assign(n,t,{id:bomIdCounter++});});
+  bomProductName=name;
+  renderBom();
+}
+
+function renderBom(){
+  const p=_tb$('panel-bom');
+  const s=bomCalcSummary();
+
+  // --- Header ---
+  let html=`<div class="card" style="padding:14px 16px">
+    <div class="bom-row" style="align-items:flex-end">
+      <div class="bom-field" style="flex:2"><div class="bom-label">产品名称</div>
+        <input class="bom-inp full" value="${bomProductName}" id="bom-pname" placeholder="输入产品名称，如：宠物围栏、储物柜..." style="font-weight:700"
+          oninput="bomProductName=this.value"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();bomProductName=this.value;bomAiAnalyze();}">
+      </div>
+      <div class="bom-field" style="flex:0.8">
+        <button class="bom-btn primary" style="width:100%;padding:9px 8px"
+          onclick="var el=document.getElementById('bom-pname');if(el)bomProductName=el.value;bomAiAnalyze()">
+          ⚡ 智能拆解
+        </button>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+      <button class="bom-btn" style="font-size:11px;padding:5px 10px;background:var(--accent-light);color:var(--accent)" onclick="document.getElementById('bom-tpl-menu').classList.toggle('hidden')">📋 模板</button>
+      <div style="position:relative;display:inline-block">
+        <div id="bom-tpl-menu" class="bom-dropdown hidden" style="bottom:32px;top:auto">
+          ${Object.keys(BOM_TPL).map(n=>`<div class="bom-dd-item" onclick="bomLoadTpl('${n}')">${n}</div>`).join('')}
+          <div class="bom-dd-item" onclick="bomItems=[bomNewItem()];bomProductName='';renderBom();">空白模板</div>
+        </div>
+      </div>
+      <span style="font-size:10px;color:var(--text2);line-height:26px">💡 输入产品名 → 点⚡智能拆解 → 自动生成BOM并预填市场价</span>
+    </div>
+  </div>`;
+
+  // Market price reference bar
+  html+=`<div style="display:flex;gap:4px;margin-bottom:8px;overflow-x:auto;padding:2px 0">
+    ${[['铝锭',MAT_PRICES['铝锭A00']],['Q235钢',MAT_PRICES['Q235钢']],['不锈钢304',MAT_PRICES['不锈钢304']],['PP',MAT_PRICES['PP']],['PVC',MAT_PRICES['PVC']],['瓦楞纸',MAT_PRICES['瓦楞纸']]].map(([n,p])=>
+      `<div style="flex-shrink:0;padding:4px 8px;border-radius:8px;background:var(--card);border:1px solid var(--border);font-size:10px;text-align:center">
+        <div style="color:var(--text2)">${n}</div><div style="font-weight:700;color:var(--primary);font-family:var(--font2)">¥${p}/kg</div>
+      </div>`
+    ).join('')}
+  </div>`;
+
+  // --- View Toggle ---
+  html+=`<div class="bom-tabs">
+    <button class="bom-tab ${bomView==='edit'?'active':''}" onclick="bomView='edit';renderBom()">📝 BOM明细 (${bomItems.length})</button>
+    <button class="bom-tab ${bomView==='summary'?'active':''}" onclick="bomView='summary';renderBom()">📊 成本汇总</button>
+  </div>`;
+
+  if(bomView==='edit'){
+    // Group items by type
+    const groups=[
+      {icon:'🔩',title:'结构部分',items:bomItems.map((it,i)=>({it,i})).filter(x=>['metal_assembly','metal_sheet','plastic'].includes(x.it.category))},
+      {icon:'🔧',title:'标准件/五金',items:bomItems.map((it,i)=>({it,i})).filter(x=>x.it.category==='standard')},
+      {icon:'📦',title:'包装部分',items:bomItems.map((it,i)=>({it,i})).filter(x=>x.it.category==='purchased')},
+    ];
+
+    groups.forEach(g=>{
+      if(g.items.length===0)return;
+      html+=`<div class="bom-section-hdr">${g.icon} <b>${g.title}</b> <span class="bom-badge">${g.items.length}项</span></div>`;
+      g.items.forEach(({it,i})=>{
+        const c=bomCalcItem(it);
+        const catInfo=BOM_CATS.find(x=>x.v===it.category)||BOM_CATS[1];
+        html+=`<div class="card bom-item-card" style="border-left:4px solid var(--primary);background:#FFFCF9">`;
+        // Item header
+        html+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span class="bom-idx">${i+1}</span>
+            <input class="bom-inp" value="${it.name}" onchange="bomItems[${i}].name=this.value" placeholder="物料名称" style="font-weight:700;width:140px">
+          </div>
+          <div style="display:flex;gap:4px">
+            <button class="bom-btn small accent" onclick="bomItems.splice(${i+1},0,Object.assign(bomNewItem(bomItems[${i}].category),JSON.parse(JSON.stringify(bomItems[${i}])),{id:bomIdCounter++,name:bomItems[${i}].name+'(副本)'}));renderBom()">复制</button>
+            <button class="bom-btn small red" onclick="if(bomItems.length>1){bomItems.splice(${i},1);renderBom();}">删除</button>
+          </div>
+        </div>`;
+
+        // Category & Basic
+        html+=`<div class="bom-row">
+          <div class="bom-field" style="flex:1.2"><div class="bom-label">物料类别</div>
+            <select class="bom-sel" onchange="bomItems[${i}].category=this.value;if(this.value==='plastic')bomItems[${i}].matPrice=7;renderBom()">
+              ${BOM_CATS.map(c=>`<option value="${c.v}"${it.category===c.v?' selected':''}>${c.l}</option>`).join('')}
+            </select>
+          </div>
+          <div class="bom-field"><div class="bom-label">材质</div>
+            <input class="bom-inp full" value="${it.material||''}" onchange="bomItems[${i}].material=this.value">
+          </div>
+          <div class="bom-field" style="flex:0.7"><div class="bom-label">规格</div>
+            <input class="bom-inp full" value="${it.spec||''}" onchange="bomItems[${i}].spec=this.value" placeholder="L×W×H">
+          </div>
+        </div>`;
+        html+=`<div class="bom-row">
+          <div class="bom-field" style="flex:0.5"><div class="bom-label">数量</div>
+            <input type="number" class="bom-inp full" value="${it.qty}" onchange="bomItems[${i}].qty=this.value;renderBom()">
+          </div>
+          <div class="bom-field" style="flex:0.4"><div class="bom-label">单位</div>
+            <select class="bom-sel" onchange="bomItems[${i}].unit=this.value">
+              ${['pcs','set','m','kg','个','套'].map(u=>`<option${it.unit===u?' selected':''}>${u}</option>`).join('')}
+            </select>
+          </div>`;
+
+        // Category-specific fields
+        if(it.category==='metal_assembly'||it.category==='metal_sheet'){
+          html+=`<div class="bom-field"><div class="bom-label">重量(g)</div>
+            <input type="number" class="bom-inp full" value="${it.weight}" onchange="bomItems[${i}].weight=this.value;renderBom()">
+          </div>
+          <div class="bom-field"><div class="bom-label">材料单价(元/kg)</div>
+            <input type="number" class="bom-inp full" value="${it.matPrice}" onchange="bomItems[${i}].matPrice=this.value;renderBom()">
+          </div>
+          <div class="bom-field" style="flex:0.5"><div class="bom-label">损耗率</div>
+            <input type="number" class="bom-inp full" value="${it.lossRate}" step="0.01" onchange="bomItems[${i}].lossRate=this.value;renderBom()">
+          </div>
+          </div>`;
+          html+=`<div class="bom-row">
+          <div class="bom-field" style="flex:0.5"><div class="bom-label">壁厚mm</div>
+            <input type="number" class="bom-inp full" value="${it.wallThick||''}" onchange="bomItems[${i}].wallThick=this.value">
+          </div>
+          <div class="bom-field" style="flex:0.5"><div class="bom-label">冲孔数</div>
+            <input type="number" class="bom-inp full" value="${it.holeCount}" onchange="bomItems[${i}].holeCount=this.value;renderBom()">
+          </div>
+          <div class="bom-field"><div class="bom-label">其他工序费</div>
+            <input type="number" class="bom-inp full" value="${it.otherFee}" step="0.1" onchange="bomItems[${i}].otherFee=this.value;renderBom()">
+          </div>
+          <div class="bom-field"><div class="bom-label">表面处理</div>
+            <select class="bom-sel" onchange="bomItems[${i}].surface=this.value;renderBom()">
+              ${BOM_SURFACE.map(ss=>`<option value="${ss.v}"${it.surface===ss.v?' selected':''}>${ss.l}${ss.up?` (${ss.up}元/m²)`:''}</option>`).join('')}
+            </select>
+          </div>
+          </div>`;
+          if(it.surface!=='none'){
+            html+=`<div class="bom-row">
+            <div class="bom-field"><div class="bom-label">外径mm</div>
+              <input type="number" class="bom-inp full" value="${it.outerDia}" onchange="bomItems[${i}].outerDia=this.value;renderBom()">
+            </div>
+            <div class="bom-field"><div class="bom-label">管长mm</div>
+              <input type="number" class="bom-inp full" value="${it.pipeLen}" onchange="bomItems[${i}].pipeLen=this.value;renderBom()">
+            </div>
+            </div>`;
+          }
+        } else if(it.category==='plastic'){
+          html+=`<div class="bom-field"><div class="bom-label">塑料类型</div>
+            <select class="bom-sel" onchange="bomItems[${i}].plasticType=this.value;renderBom()">
+              ${BOM_PLASTIC.map(pp=>`<option value="${pp.v}"${it.plasticType===pp.v?' selected':''}>${pp.v} (材${pp.mr*100}%/工${pp.pr*100}%)</option>`).join('')}
+            </select>
+          </div>
+          <div class="bom-field"><div class="bom-label">重量(g)</div>
+            <input type="number" class="bom-inp full" value="${it.weight}" onchange="bomItems[${i}].weight=this.value;renderBom()">
+          </div>
+          <div class="bom-field"><div class="bom-label">材料单价(元/kg)</div>
+            <input type="number" class="bom-inp full" value="${it.matPrice}" onchange="bomItems[${i}].matPrice=this.value;renderBom()">
+          </div>
+          </div>`;
+        } else if(it.category==='standard'){
+          html+=`<div class="bom-field"><div class="bom-label">含税单价(元/pcs)</div>
+            <input type="number" class="bom-inp full" value="${it.stdUnitPrice}" step="0.01" onchange="bomItems[${i}].stdUnitPrice=this.value;renderBom()">
+          </div>
+          <div class="bom-field" style="flex:0.6"><div class="bom-label">材料占比</div>
+            <input type="number" class="bom-inp full" value="${it.stdMatRatio}" step="0.01" onchange="bomItems[${i}].stdMatRatio=this.value;renderBom()">
+          </div>
+          </div>`;
+        } else if(it.category==='purchased'){
+          html+=`<div class="bom-field"><div class="bom-label">外购类型</div>
+            <select class="bom-sel" onchange="bomItems[${i}].purchType=this.value;renderBom()">
+              ${BOM_PURCH.map(pp=>`<option value="${pp.v}"${it.purchType===pp.v?' selected':''}>${pp.l}</option>`).join('')}
+            </select>
+          </div>
+          <div class="bom-field" style="flex:0.5"><div class="bom-label">材料占比</div>
+            <input type="number" class="bom-inp full" value="${it.purchMatRatio}" step="0.01" onchange="bomItems[${i}].purchMatRatio=this.value;renderBom()">
+          </div>
+          </div>`;
+          const isArea=['carton','plastic_bag','bubble_wrap'].includes(it.purchType);
+          if(isArea){
+            html+=`<div class="bom-row">
+            <div class="bom-field"><div class="bom-label">长mm</div>
+              <input type="number" class="bom-inp full" value="${it.pLen}" onchange="bomItems[${i}].pLen=this.value;renderBom()">
+            </div>
+            <div class="bom-field"><div class="bom-label">宽mm</div>
+              <input type="number" class="bom-inp full" value="${it.pWid}" onchange="bomItems[${i}].pWid=this.value;renderBom()">
+            </div>
+            ${it.purchType==='carton'?`<div class="bom-field"><div class="bom-label">高mm</div>
+              <input type="number" class="bom-inp full" value="${it.pHei}" onchange="bomItems[${i}].pHei=this.value;renderBom()">
+            </div>`:''}
+            <div class="bom-field"><div class="bom-label">面积单价</div>
+              <input type="number" class="bom-inp full" value="${it.areaPrice}" step="0.5" onchange="bomItems[${i}].areaPrice=this.value;renderBom()">
+            </div>
+            </div>`;
+          } else {
+            html+=`<div class="bom-row"><div class="bom-field"><div class="bom-label">固定单价(元)</div>
+              <input type="number" class="bom-inp full" value="${it.fixedPrice}" step="0.1" onchange="bomItems[${i}].fixedPrice=this.value;renderBom()">
+            </div></div>`;
+          }
+        } else {
+          html+=`</div>`;
+        }
+
+        // Remark
+        html+=`<div class="bom-row"><div class="bom-field" style="flex:1"><div class="bom-label">备注/工艺</div>
+          <input class="bom-inp full" value="${it.remark||''}" onchange="bomItems[${i}].remark=this.value" placeholder="切割、焊接、冲孔...">
+        </div></div>`;
+
+        // Result bar
+        html+=`<div class="bom-result-bar">
+          <div class="bom-mini"><div class="bom-mini-l">材料费</div><div class="bom-mini-v" style="color:var(--accent)">¥${c.mat.toFixed(2)}</div></div>
+          <div class="bom-mini"><div class="bom-mini-l">加工费</div><div class="bom-mini-v" style="color:var(--green)">¥${c.proc.toFixed(2)}</div></div>
+          ${c.surf>0?`<div class="bom-mini"><div class="bom-mini-l">表面处理</div><div class="bom-mini-v" style="color:var(--purple)">¥${c.surf.toFixed(2)}</div></div>`:''}
+          <div class="bom-mini"><div class="bom-mini-l">含税单价</div><div class="bom-mini-v bom-bold" style="color:var(--primary)">¥${c.total.toFixed(2)}</div></div>
+        </div>`;
+        html+=`</div>`; // close card
+      });
+    });
+
+    // Add buttons
+    html+=`<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap">
+      ${[{cat:'metal_sheet',l:'+ 金属件',i:'🔩'},{cat:'plastic',l:'+ 塑胶件',i:'♻️'},{cat:'standard',l:'+ 标准件',i:'🔧'},{cat:'purchased',l:'+ 外购件',i:'📦'}].map(b=>
+        `<button class="bom-btn add" onclick="bomItems.push(bomNewItem('${b.cat}'));renderBom()">${b.i} ${b.l}</button>`
+      ).join('')}
+    </div>`;
+
+    // Quick summary bar
+    html+=`<div class="bom-total-bar" onclick="bomView='summary';renderBom()">
+      <div><div style="font-size:10px;color:rgba(255,255,255,.7)">直接成本合计</div>
+        <div style="font-size:20px;font-weight:900;color:#fff;font-family:var(--font2)">¥${s.tc.toFixed(2)}</div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,.9);font-weight:600">查看完整核算 →</div>
+    </div>`;
+
+  } else {
+    // =================== SUMMARY VIEW ===================
+    // Fee rate adjustments
+    html+=`<div class="card" style="border:2px solid var(--primary);background:linear-gradient(180deg,#FFFDF9,#fff)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:20px">📊</span><b style="font-size:16px">成本汇总</b>
+      </div>
+      <div class="bom-fee-grid">
+        ${[{k:'mfg',l:'制造费率'},{k:'mgmt',l:'管理费率'},{k:'ship',l:'运输费率'},{k:'profit',l:'利润率'},{k:'tax',l:'税率'}].map(f=>
+          `<div><div class="bom-label">${f.l}</div><div style="display:flex;align-items:center;gap:2px">
+            <input type="number" step="0.01" class="bom-inp" value="${bomFees[f.k]}" style="width:58px;text-align:right;padding:4px 6px;font-size:12px" onchange="bomFees.${f.k}=this.value;renderBom()">
+            <span style="font-size:10px;color:var(--text2)">(${((parseFloat(bomFees[f.k])||0)*100).toFixed(0)}%)</span>
+          </div></div>`
+        ).join('')}
+      </div>`;
+
+    // Cost rows
+    const rows=[
+      {l:'直接成本',v:s.tc,c:'var(--text)',i:'📦'},
+      {l:'制造费用',v:s.mfg,c:'var(--accent)',i:'🏭'},
+      {l:'管理费用',v:s.mgmt,c:'var(--purple)',i:'📋'},
+      {l:'运输费用',v:s.ship,c:'var(--gold)',i:'🚛'},
+      {l:'利润',v:s.profit,c:'var(--green)',i:'💰'},
+      {l:'税金',v:s.tax,c:'var(--red)',i:'🏛️'},
+    ];
+    rows.forEach((r,i)=>{
+      html+=`<div class="bom-summary-row${i<rows.length-1?' bordered':''}">
+        <div style="display:flex;align-items:center;gap:6px"><span style="font-size:14px">${r.i}</span><span style="font-size:13px;font-weight:500">${r.l}</span></div>
+        <span style="font-size:14px;font-weight:700;color:${r.c};font-family:var(--font2)">¥${r.v.toFixed(2)}</span>
+      </div>`;
+    });
+
+    // Grand total
+    html+=`<div class="bom-grand-total">
+      <div><div style="font-size:11px;color:rgba(255,255,255,.8)">核算总价</div>
+        <div style="font-size:24px;font-weight:900;color:#fff;font-family:var(--font2)">¥${s.final_.toFixed(2)}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:10px;color:rgba(255,255,255,.7)">材料成本占比</div>
+        <div style="font-size:16px;font-weight:700;color:#fff">${s.tc>0?((s.tm/s.tc)*100).toFixed(1):0}%</div>
+      </div>
+    </div>`;
+
+    // Mat vs Proc
+    html+=`<div style="display:flex;gap:8px;margin-top:10px">
+      <div class="bom-split-box" style="background:var(--accent-light)"><div class="bom-label">材料总成本</div>
+        <div style="font-size:15px;font-weight:700;color:var(--accent);font-family:var(--font2)">¥${s.tm.toFixed(2)}</div></div>
+      <div class="bom-split-box" style="background:var(--green-light)"><div class="bom-label">加工总成本</div>
+        <div style="font-size:15px;font-weight:700;color:var(--green);font-family:var(--font2)">¥${s.tp.toFixed(2)}</div></div>
+    </div>`;
+    html+=`</div>`; // close card
+
+    // Supplier comparison
+    html+=`<div class="card" style="border:1.5px solid var(--accent)">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:18px">🔍</span><b style="font-size:15px">供应商报价对比</b>
+      </div>
+      <div class="bom-row">
+        <div class="bom-field" style="flex:1"><div class="bom-label">供应商报价(含税)</div>
+          <input type="number" class="bom-inp full" id="bom-sp" value="${bomSupplierPrice}" placeholder="输入供应商报价" style="font-size:16px;font-weight:700" oninput="bomSupplierPrice=this.value;renderBom()">
+        </div>
+        <div class="bom-field" style="flex:0.8"><div class="bom-label">核算价</div>
+          <div style="padding:8px 10px;border-radius:8px;background:var(--primary-light);font-size:16px;font-weight:700;color:var(--primary);font-family:var(--font2)">¥${s.final_.toFixed(2)}</div>
+        </div>
+      </div>`;
+    const sp=parseFloat(bomSupplierPrice)||0;
+    if(sp>0){
+      const diff=((sp-s.final_)/s.final_*100);
+      const dc=diff>5?'var(--red)':diff<-5?'var(--green)':'var(--gold)';
+      const dbg=diff>5?'var(--red-light)':diff<-5?'var(--green-light)':'var(--gold-light)';
+      const tip=diff>10?'⚠️ 供应商报价偏高，建议谈判压价':diff>5?'⚡ 报价略高，有压价空间':diff>-5?'✅ 报价合理':'💡 报价偏低，关注品质风险';
+      html+=`<div style="margin-top:10px;padding:12px;border-radius:10px;background:${dbg};text-align:center">
+        <div style="font-size:11px;color:var(--text2)">偏差率</div>
+        <div style="font-size:22px;font-weight:900;color:${dc};font-family:var(--font2)">${diff>0?'+':''}${diff.toFixed(1)}%</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:4px">${tip}</div>
+      </div>`;
+    }
+    html+=`</div>`;
+
+    // Detail table
+    html+=`<div class="card"><div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:16px">📋</span><b style="font-size:14px">明细清单</b>
+    </div><div style="overflow-x:auto"><table class="bom-table"><thead><tr>
+      <th>#</th><th>物料</th><th>类别</th><th>数量</th><th>材料费</th><th>加工费</th><th>含税单价</th><th>占比</th>
+    </tr></thead><tbody>`;
+    s.details.forEach(({it,c},i)=>{
+      const ratio=s.tc>0?(c.total/s.tc*100):0;
+      const catL=BOM_CATS.find(x=>x.v===it.category);
+      html+=`<tr>
+        <td style="color:var(--text2)">${i+1}</td>
+        <td style="font-weight:600;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${it.name||'—'}</td>
+        <td><span class="bom-badge">${catL?catL.l:it.category}</span></td>
+        <td>${it.qty}</td>
+        <td style="color:var(--accent);font-family:var(--font2)">${(c.mat*(parseFloat(it.qty)||1)).toFixed(2)}</td>
+        <td style="color:var(--green);font-family:var(--font2)">${(c.total-c.mat*(parseFloat(it.qty)||1)).toFixed(2)}</td>
+        <td style="font-weight:700;color:var(--primary);font-family:var(--font2)">${c.total.toFixed(2)}</td>
+        <td><div class="bom-bar-bg"><div class="bom-bar-fill" style="width:${Math.min(ratio,100)}%"></div></div>
+          <span style="font-size:9px;color:var(--text2)">${ratio.toFixed(1)}%</span></td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div></div>`;
+  }
+
+  p.innerHTML=html;
+}
+
+// Init BOM with one empty item
+bomItems=[bomNewItem()];
+
+// ====================== INIT (called by toggle) ======================
+
+// keyboard support for calculator
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('tbOv').classList.contains('show'))return;
+  if(activeTab!=='calc')return;
+  const k=e.key;
+  if(k>='0'&&k<='9'||k==='.'){
+    const n=k;
+    if(calcNewNum){calcDisplay=n==='.'?'0.':n;calcNewNum=false;}
+    else{if(n==='.'&&calcDisplay.includes('.'))return;calcDisplay=calcDisplay==='0'&&n!=='.'?n:calcDisplay+n;}
+    renderCalc();
+  }else if(k==='+'||k==='-'){
+    const op=k;const cur=parseFloat(calcDisplay);
+    if(calcPrev!==null&&!calcNewNum){const r=calcDoCalc(calcPrev,calcOp,cur);calcPrev=r;calcDisplay=String(parseFloat(r.toFixed(10)));}
+    else calcPrev=cur;
+    calcOp=op;calcNewNum=true;renderCalc();
+  }else if(k==='*'){
+    const cur=parseFloat(calcDisplay);
+    if(calcPrev!==null&&!calcNewNum){const r=calcDoCalc(calcPrev,calcOp,cur);calcPrev=r;calcDisplay=String(parseFloat(r.toFixed(10)));}
+    else calcPrev=cur;
+    calcOp='×';calcNewNum=true;renderCalc();
+  }else if(k==='/'){
+    e.preventDefault();const cur=parseFloat(calcDisplay);
+    if(calcPrev!==null&&!calcNewNum){const r=calcDoCalc(calcPrev,calcOp,cur);calcPrev=r;calcDisplay=String(parseFloat(r.toFixed(10)));}
+    else calcPrev=cur;
+    calcOp='÷';calcNewNum=true;renderCalc();
+  }else if(k==='Enter'||k==='='){
+    if(calcPrev===null||calcOp===null)return;
+    const cur=parseFloat(calcDisplay);const r=calcDoCalc(calcPrev,calcOp,cur);
+    const expr=`${calcPrev} ${calcOp} ${cur} = ${r==='Error'?'Error':parseFloat(Number(r).toFixed(10))}`;
+    calcHistory=[expr,...calcHistory.slice(0,14)];
+    calcDisplay=r==='Error'?'Error':String(parseFloat(Number(r).toFixed(10)));
+    calcPrev=null;calcOp=null;calcNewNum=true;renderCalc();
+  }else if(k==='Backspace'){
+    if(calcDisplay.length<=1||calcDisplay==='Error'){calcDisplay='0';calcNewNum=true;}
+    else calcDisplay=calcDisplay.slice(0,-1);
+    renderCalc();
+  }else if(k==='Escape'){
+    calcDisplay='0';calcPrev=null;calcOp=null;calcNewNum=true;renderCalc();
+  }
+});
+
+</script>
+
+
 </body>
 </html>
