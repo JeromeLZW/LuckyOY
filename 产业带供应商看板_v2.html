@@ -3,371 +3,517 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>第137届广交会 | 产业带供应商看板 V2</title>
+<title>Jerome供应商产业带汇总</title>
 <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script src="search_data_v2.js"></script>
 <style>
   :root {
-    --bg: #0a0e27; --card: #111640; --card-hover: #161d52;
-    --border: #1e2a5a; --accent: #3b82f6; --accent2: #06b6d4; --accent3: #8b5cf6;
-    --gold: #f59e0b; --green: #10b981; --red: #ef4444;
-    --text: #e2e8f0; --text-dim: #94a3b8; --text-bright: #ffffff;
+    --bg: #050816; --surface: #0c1029; --card: #101536; --card2: #141a42;
+    --border: #1c2460; --border-light: #252d6d;
+    --accent: #5b8def; --accent2: #36d6b6; --accent3: #b07aff;
+    --gold: #ffa94d; --green: #51cf66; --red: #ff6b6b; --pink: #f06595;
+    --text: #c9d1e8; --text-dim: #6b7db3; --text-bright: #eef1ff;
+    --radius: 16px; --radius-sm: 10px;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior: smooth; }
   body {
-    font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+    font-family: -apple-system, "SF Pro Display", "Inter", "Microsoft YaHei", sans-serif;
     background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden;
   }
-  .header {
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-    border-bottom: 1px solid var(--border); padding: 24px 40px;
-    position: sticky; top: 0; z-index: 100; backdrop-filter: blur(20px);
+
+  /* ===== HERO HEADER ===== */
+  .hero {
+    position: relative; overflow: hidden;
+    background: linear-gradient(165deg, #0a0f2e 0%, #12103a 35%, #0d1a3a 65%, #091028 100%);
+    padding: 40px 0 0;
   }
-  .header-inner { max-width: 1800px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-  .header h1 {
-    font-size: 26px; font-weight: 700;
-    background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px;
+  .hero::before {
+    content: ''; position: absolute; top: -40%; left: -10%; width: 60%; height: 140%;
+    background: radial-gradient(ellipse, rgba(91,141,239,0.08) 0%, transparent 70%);
+    pointer-events: none;
   }
-  .header .subtitle { font-size: 13px; color: var(--text-dim); margin-top: 4px; }
-  .header-stats { display: flex; gap: 32px; }
-  .header-stat { text-align: center; }
-  .header-stat .num {
-    font-size: 28px; font-weight: 800;
+  .hero::after {
+    content: ''; position: absolute; top: -20%; right: -10%; width: 50%; height: 120%;
+    background: radial-gradient(ellipse, rgba(176,122,255,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-inner { max-width: 1800px; margin: 0 auto; padding: 0 48px; position: relative; z-index: 1; }
+  .hero-top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 36px; }
+  .hero h1 {
+    font-size: 34px; font-weight: 800; letter-spacing: 1px; line-height: 1.2;
+    background: linear-gradient(135deg, #7aadff 0%, #b07aff 50%, #f06595 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .hero .subtitle {
+    font-size: 13px; color: var(--text-dim); margin-top: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hero .live-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 10px var(--green); animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.85)} }
+  .hero-date { font-size: 12px; color: var(--text-dim); text-align: right; }
+
+  /* ===== KPI STRIP (inside hero) ===== */
+  .kpi-strip {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 0;
+    border-top: 1px solid rgba(91,141,239,0.12);
+    background: rgba(10,15,46,0.6); backdrop-filter: blur(12px);
+  }
+  .kpi-item {
+    padding: 22px 24px; text-align: center; position: relative;
+    border-right: 1px solid rgba(91,141,239,0.08);
+    transition: background 0.3s;
+  }
+  .kpi-item:last-child { border-right: none; }
+  .kpi-item:hover { background: rgba(91,141,239,0.04); }
+  .kpi-item .kv {
+    font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   }
-  .header-stat .label { font-size: 11px; color: var(--text-dim); margin-top: 2px; letter-spacing: 1px; }
-  .kpi-row { max-width: 1800px; margin: 20px auto; padding: 0 40px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
-  .kpi-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
-    padding: 18px 20px; position: relative; overflow: hidden; transition: all 0.3s;
+  .kpi-item .kv.purple { background: linear-gradient(135deg, var(--accent3), #d6a4ff); -webkit-background-clip: text; }
+  .kpi-item .kv.gold { background: linear-gradient(135deg, var(--gold), #ffd43b); -webkit-background-clip: text; }
+  .kpi-item .kv.green { background: linear-gradient(135deg, var(--green), #69db7c); -webkit-background-clip: text; }
+  .kpi-item .kv.red { background: linear-gradient(135deg, var(--red), #ffa8a8); -webkit-background-clip: text; }
+  .kpi-item .kv.pink { background: linear-gradient(135deg, var(--pink), #faa2c1); -webkit-background-clip: text; }
+  .kpi-item .kl { font-size: 11px; color: var(--text-dim); margin-top: 6px; letter-spacing: 1px; }
+  .kpi-item .kbar { margin: 10px auto 0; width: 80%; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.04); }
+  .kpi-item .kbar-fill { height: 100%; border-radius: 2px; transition: width 2s cubic-bezier(0.4,0,0.2,1); }
+
+  /* ===== NAV TABS ===== */
+  .nav-tabs {
+    max-width: 1800px; margin: 0 auto; padding: 0 48px;
+    display: flex; gap: 0; position: sticky; top: 0; z-index: 100;
+    background: rgba(5,8,22,0.92); backdrop-filter: blur(20px) saturate(1.4);
+    border-bottom: 1px solid var(--border);
   }
-  .kpi-card:hover { transform: translateY(-2px); border-color: var(--accent); }
-  .kpi-card .kpi-icon { position: absolute; top: 12px; right: 14px; font-size: 28px; opacity: 0.2; }
-  .kpi-card .kpi-val { font-size: 26px; font-weight: 800; color: var(--text-bright); }
-  .kpi-card .kpi-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
-  .kpi-card .kpi-bar { margin-top: 10px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.05); }
-  .kpi-card .kpi-bar-fill { height: 100%; border-radius: 2px; transition: width 1.5s ease; }
-  .main { max-width: 1800px; margin: 0 auto; padding: 20px 40px 40px; }
-  .section-title {
-    font-size: 20px; font-weight: 700; margin: 28px 0 16px; padding-left: 14px;
-    border-left: 4px solid var(--accent); display: flex; align-items: center; gap: 10px;
+  .nav-tab {
+    padding: 16px 28px; font-size: 13px; font-weight: 600; color: var(--text-dim);
+    cursor: pointer; position: relative; transition: color 0.25s; white-space: nowrap;
+    border: none; background: none; letter-spacing: 0.3px;
   }
-  .section-title .badge {
-    font-size: 11px; padding: 3px 10px; border-radius: 20px;
-    background: rgba(59,130,246,0.15); color: var(--accent); font-weight: 600;
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--accent); }
+  .nav-tab.active::after {
+    content: ''; position: absolute; bottom: -1px; left: 20%; right: 20%; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 2px;
   }
-  .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-  .chart-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px;
+
+  /* ===== MAIN ===== */
+  .main { max-width: 1800px; margin: 0 auto; padding: 28px 48px 48px; }
+  .section { display: none; }
+  .section.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  .section-head {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 22px; padding-bottom: 14px;
+    border-bottom: 1px solid rgba(91,141,239,0.08);
   }
-  .chart-card h3 { font-size: 15px; margin-bottom: 14px; color: var(--text); display: flex; align-items: center; gap: 8px; }
-  .chart-container { width: 100%; height: 380px; }
-  .full-chart { grid-column: 1 / -1; }
-  .belt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap: 20px; }
-  .belt-card {
-    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
-    padding: 24px; transition: all 0.3s; cursor: default;
+  .section-head h2 { font-size: 20px; font-weight: 700; color: var(--text-bright); }
+  .section-head .badge {
+    font-size: 10px; padding: 4px 14px; border-radius: 20px;
+    background: rgba(91,141,239,0.1); color: var(--accent); font-weight: 700;
+    letter-spacing: 1.5px; border: 1px solid rgba(91,141,239,0.2);
   }
-  .belt-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .belt-card .belt-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-  .belt-card .belt-name { font-size: 18px; font-weight: 700; color: var(--text-bright); }
-  .belt-card .belt-count { font-size: 24px; font-weight: 800; padding: 2px 14px; border-radius: 8px; }
-  .belt-card .belt-provinces { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
-  .belt-card .belt-desc { font-size: 12px; color: var(--text-dim); margin-top: 2px; font-style: italic; }
-  .belt-data { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
-  .belt-data-item { background: rgba(255,255,255,0.03); border-radius: 8px; padding: 10px 14px; }
-  .belt-data-item .di-label { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
-  .belt-data-item .di-value { font-size: 14px; font-weight: 700; color: var(--text-bright); }
-  .scale-bars { margin-top: 14px; }
-  .scale-bar-row { display: flex; align-items: center; margin-bottom: 6px; }
-  .scale-bar-label { width: 90px; font-size: 11px; color: var(--text-dim); text-align: right; padding-right: 10px; flex-shrink: 0; }
-  .scale-bar-track { flex: 1; height: 18px; background: rgba(255,255,255,0.04); border-radius: 4px; overflow: hidden; }
-  .scale-bar-fill {
-    height: 100%; border-radius: 4px; transition: width 1.2s ease;
-    display: flex; align-items: center; justify-content: flex-end;
-    padding-right: 6px; font-size: 10px; font-weight: 600; color: #fff; min-width: 30px;
+
+  /* ===== SEARCH SECTION ===== */
+  .search-hero {
+    background: linear-gradient(160deg, rgba(91,141,239,0.06) 0%, rgba(176,122,255,0.05) 50%, rgba(54,214,182,0.04) 100%);
+    border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 36px 40px; position: relative; overflow: hidden;
   }
-  .scale-bar-num { width: 50px; font-size: 11px; color: var(--text-dim); text-align: right; padding-left: 8px; flex-shrink: 0; }
-  .type-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
-  .type-pill { font-size: 11px; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
-  .top-cities { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-  .city-tag {
-    font-size: 11px; padding: 3px 10px; border-radius: 4px;
-    background: rgba(59,130,246,0.1); color: var(--accent); border: 1px solid rgba(59,130,246,0.2);
-  }
-  .search-section {
-    background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(139,92,246,0.08));
-    border: 1px solid var(--border); border-radius: 16px; padding: 28px 32px; margin-bottom: 24px;
+  .search-hero::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(91,141,239,0.4), rgba(176,122,255,0.3), transparent);
   }
   .search-bar { display: flex; gap: 12px; align-items: center; }
   .search-input-wrap { flex: 1; position: relative; }
-  .search-input-wrap .icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--text-dim); pointer-events: none; z-index: 2; }
+  .search-input-wrap .icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); font-size: 18px; color: var(--text-dim); pointer-events: none; z-index: 2; }
+  .search-input {
+    width: 100%; padding: 16px 22px 16px 50px;
+    background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+    border-radius: 14px; color: var(--text-bright); font-size: 15px; outline: none;
+    transition: all 0.3s;
+  }
+  .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(91,141,239,0.12); }
+  .search-input::placeholder { color: #4a5a8a; }
   .suggest-dropdown {
     position: absolute; top: 100%; left: 0; right: 0; z-index: 200;
-    background: #1a1f4a; border: 1px solid var(--border); border-top: none;
-    border-radius: 0 0 12px 12px; max-height: 320px; overflow-y: auto;
-    display: none; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    background: rgba(16,21,54,0.98); border: 1px solid var(--border); border-top: none;
+    border-radius: 0 0 14px 14px; max-height: 320px; overflow-y: auto;
+    display: none; box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+    backdrop-filter: blur(20px);
   }
   .suggest-dropdown.show { display: block; }
   .suggest-item {
-    padding: 10px 16px 10px 46px; cursor: pointer; font-size: 14px;
-    color: var(--text); display: flex; justify-content: space-between; align-items: center; transition: background 0.15s;
+    padding: 11px 18px 11px 50px; cursor: pointer; font-size: 14px;
+    color: var(--text); display: flex; justify-content: space-between; align-items: center;
+    transition: background 0.15s;
   }
-  .suggest-item:hover, .suggest-item.active { background: rgba(59,130,246,0.15); color: var(--text-bright); }
+  .suggest-item:hover, .suggest-item.active { background: rgba(91,141,239,0.1); color: var(--text-bright); }
   .suggest-item .kw { flex: 1; }
-  .suggest-item .kw mark { background: rgba(59,130,246,0.4); color: #fff; border-radius: 2px; padding: 0 2px; }
-  .suggest-item .cnt { font-size: 11px; color: var(--text-dim); background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 10px; margin-left: 10px; white-space: nowrap; }
-  .suggest-header {
-    padding: 8px 16px; font-size: 11px; color: var(--text-dim);
-    border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: 600; letter-spacing: 1px;
-  }
-  .search-input {
-    width: 100%; padding: 14px 18px 14px 46px;
-    background: rgba(0,0,0,0.3); border: 1px solid var(--border);
-    border-radius: 12px; color: var(--text-bright); font-size: 15px; outline: none; transition: border 0.3s;
-  }
-  .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
-  .search-input::placeholder { color: var(--text-dim); }
+  .suggest-item .kw mark { background: rgba(91,141,239,0.4); color: #fff; border-radius: 3px; padding: 0 3px; }
+  .suggest-item .cnt { font-size: 11px; color: var(--text-dim); background: rgba(255,255,255,0.05); padding: 3px 10px; border-radius: 12px; margin-left: 10px; }
+  .suggest-header { padding: 10px 18px; font-size: 10px; color: var(--text-dim); border-bottom: 1px solid rgba(255,255,255,0.04); font-weight: 700; letter-spacing: 2px; }
   .search-btn {
-    padding: 14px 32px; border: none; border-radius: 12px;
+    padding: 16px 40px; border: none; border-radius: 14px;
     background: linear-gradient(135deg, var(--accent), var(--accent3));
     color: #fff; font-size: 15px; font-weight: 700; cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s; white-space: nowrap;
+    transition: all 0.3s; white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(91,141,239,0.3);
   }
-  .search-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(59,130,246,0.4); }
-  .search-filters { display: flex; gap: 12px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
+  .search-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(91,141,239,0.45); }
+  .search-filters { display: flex; gap: 12px; margin-top: 18px; flex-wrap: wrap; align-items: center; }
   .filter-select {
-    padding: 8px 14px; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text); font-size: 13px; outline: none; cursor: pointer; min-width: 130px;
+    padding: 10px 16px; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); color: var(--text); font-size: 13px; outline: none; cursor: pointer; min-width: 130px;
   }
   .filter-select:focus { border-color: var(--accent); }
-  .search-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .search-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
   .search-tag {
-    padding: 5px 14px; border-radius: 20px; font-size: 12px;
-    background: rgba(59,130,246,0.12); color: var(--accent);
-    border: 1px solid rgba(59,130,246,0.25); cursor: pointer; transition: all 0.2s;
+    padding: 6px 16px; border-radius: 20px; font-size: 12px;
+    background: rgba(91,141,239,0.07); color: var(--accent);
+    border: 1px solid rgba(91,141,239,0.15); cursor: pointer;
+    transition: all 0.25s; font-weight: 500;
   }
-  .search-tag:hover { background: rgba(59,130,246,0.25); }
-  .search-results { margin-top: 20px; }
-  .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .search-tag:hover { background: rgba(91,141,239,0.18); border-color: rgba(91,141,239,0.35); transform: translateY(-1px); }
+  .search-results { margin-top: 28px; }
+  .results-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
   .results-count { font-size: 14px; color: var(--text-dim); }
-  .results-count strong { color: var(--accent); font-size: 18px; }
-  .results-table-wrap { overflow-x: auto; border-radius: 12px; border: 1px solid var(--border); }
+  .results-count strong { color: var(--accent); font-size: 20px; font-weight: 800; }
+  .results-table-wrap {
+    overflow-x: auto; border-radius: var(--radius);
+    border: 1px solid var(--border); box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
   .results-table { width: 100%; border-collapse: collapse; font-size: 13px; }
   .results-table th {
-    background: rgba(59,130,246,0.15); color: var(--text);
-    padding: 12px 14px; text-align: left; font-weight: 600; white-space: nowrap;
-    position: sticky; top: 0; border-bottom: 1px solid var(--border);
+    background: rgba(91,141,239,0.08); color: var(--text);
+    padding: 14px 16px; text-align: left; font-weight: 600; white-space: nowrap;
+    position: sticky; top: 0; border-bottom: 1px solid var(--border); font-size: 12px;
   }
-  .results-table td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); color: var(--text); vertical-align: top; }
-  .results-table tr:hover td { background: rgba(59,130,246,0.06); }
-  .results-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
-  .results-table tr:nth-child(even):hover td { background: rgba(59,130,246,0.06); }
+  .results-table td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.025); color: var(--text); vertical-align: top; }
+  .results-table tr:hover td { background: rgba(91,141,239,0.04); }
+  .results-table tr:nth-child(even) td { background: rgba(255,255,255,0.012); }
   .results-table .company-name { font-weight: 700; color: var(--text-bright); max-width: 240px; }
-  .results-table .products { max-width: 320px; font-size: 12px; color: var(--text); line-height: 1.6; }
+  .results-table .products { max-width: 320px; font-size: 12px; line-height: 1.7; }
   .results-table .products .product-tag {
-    display: inline-block; padding: 1px 7px; margin: 1px 3px 1px 0;
-    background: rgba(59,130,246,0.1); border-radius: 4px; font-size: 11px;
-    color: #93c5fd; border: 1px solid rgba(59,130,246,0.15);
+    display: inline-block; padding: 2px 8px; margin: 2px 3px 2px 0;
+    background: rgba(91,141,239,0.07); border-radius: 5px; font-size: 11px;
+    color: #93c5fd; border: 1px solid rgba(91,141,239,0.1);
   }
-  .results-table .products .product-tag mark { background: rgba(251,191,36,0.35); color: #fef3c7; }
-  .results-table .products .product-tag.from-desc {
-    background: rgba(245,158,11,0.1); color: #fbbf24; border-color: rgba(245,158,11,0.2);
-  }
+  .results-table .products .product-tag mark { background: rgba(255,169,77,0.35); color: #fef3c7; }
   .results-table .contact-info { font-size: 11px; color: var(--accent2); word-break: break-all; }
-  .pill-sm { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; white-space: nowrap; }
-  .pill-prod { background: rgba(59,130,246,0.15); color: #60a5fa; }
-  .pill-trade { background: rgba(16,185,129,0.15); color: #34d399; }
-  .pill-scale { background: rgba(245,158,11,0.15); color: #fbbf24; }
-  .pill-tag { background: rgba(236,72,153,0.15); color: #f472b6; }
-  .tag-badge {
-    display: inline-block; padding: 1px 6px; margin: 1px 2px; border-radius: 8px;
-    font-size: 10px; font-weight: 600;
-  }
-  .tag-brand { background: rgba(245,158,11,0.2); color: #fbbf24; }
-  .tag-hightech { background: rgba(59,130,246,0.2); color: #60a5fa; }
-  .tag-honored { background: rgba(239,68,68,0.2); color: #f87171; }
-  .tag-specialized { background: rgba(16,185,129,0.2); color: #34d399; }
-  .tag-green { background: rgba(16,185,129,0.2); color: #6ee7b7; }
-  .tag-aeo { background: rgba(139,92,246,0.2); color: #a78bfa; }
-  .tag-new { background: rgba(6,182,212,0.2); color: #22d3ee; }
-  mark { background: rgba(251,191,36,0.3); color: var(--text-bright); border-radius: 2px; padding: 0 2px; }
-  .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 18px; }
+  .pill-sm { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+  .pill-prod { background: rgba(91,141,239,0.12); color: #5b8def; }
+  .pill-trade { background: rgba(176,122,255,0.12); color: #b07aff; }
+  .pill-scale { background: rgba(54,214,182,0.12); color: #36d6b6; }
+  .tag-badge { display: inline-block; padding: 2px 8px; margin: 2px 3px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+  .tag-brand { background: rgba(255,169,77,0.15); color: #ffa94d; }
+  .tag-hightech { background: rgba(91,141,239,0.15); color: #5b8def; }
+  .tag-honored { background: rgba(255,107,107,0.15); color: #ff6b6b; }
+  .tag-specialized { background: rgba(81,207,102,0.15); color: #51cf66; }
+  .tag-green { background: rgba(81,207,102,0.12); color: #51cf66; }
+  .tag-aeo { background: rgba(176,122,255,0.15); color: #b07aff; }
+  .tag-new { background: rgba(54,214,182,0.15); color: #36d6b6; }
+  mark { background: rgba(255,169,77,0.3); color: var(--text-bright); border-radius: 3px; padding: 0 3px; }
+  .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; }
   .page-btn {
-    padding: 8px 16px; border: 1px solid var(--border); border-radius: 8px;
-    background: var(--card); color: var(--text); font-size: 13px; cursor: pointer; transition: all 0.2s;
+    padding: 9px 18px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--card); color: var(--text); font-size: 13px; cursor: pointer; transition: all 0.25s;
   }
   .page-btn:hover { border-color: var(--accent); color: var(--accent); }
-  .page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .page-btn.active { background: linear-gradient(135deg, var(--accent), var(--accent3)); color: #fff; border-color: transparent; }
+  .page-btn:disabled { opacity: 0.25; cursor: not-allowed; }
   .page-info { font-size: 13px; color: var(--text-dim); margin: 0 8px; }
-  .loading { text-align: center; padding: 40px; color: var(--text-dim); font-size: 14px; }
-  .loading .spinner {
-    display: inline-block; width: 24px; height: 24px;
-    border: 3px solid var(--border); border-top-color: var(--accent);
-    border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 10px; vertical-align: middle;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .no-results { text-align: center; padding: 50px; color: var(--text-dim); }
-  .no-results .big { font-size: 48px; margin-bottom: 12px; }
-  .footer { text-align: center; padding: 30px; font-size: 12px; color: var(--text-dim); border-top: 1px solid var(--border); margin-top: 40px; }
-  .desc-tooltip {
-    position: relative; cursor: help; border-bottom: 1px dashed var(--text-dim);
-  }
+  .no-results { text-align: center; padding: 60px; color: var(--text-dim); }
+  .no-results .big { font-size: 52px; margin-bottom: 16px; opacity: 0.5; }
+  .desc-tooltip { position: relative; cursor: help; border-bottom: 1px dashed rgba(107,125,179,0.4); }
   .desc-tooltip:hover::after {
     content: attr(data-tip); position: absolute; bottom: 100%; left: 0;
-    background: #1e293b; color: var(--text); padding: 8px 12px; border-radius: 8px;
-    font-size: 11px; width: 300px; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-    border: 1px solid var(--border); white-space: pre-wrap; line-height: 1.5;
+    background: rgba(16,21,54,0.98); color: var(--text); padding: 10px 14px; border-radius: var(--radius-sm);
+    font-size: 11px; width: 320px; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    border: 1px solid var(--border); white-space: pre-wrap; line-height: 1.6;
   }
+
+  /* ===== CHARTS SECTION ===== */
+  .charts-grid-top { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .charts-grid-bot { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .chart-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 24px; position: relative; overflow: hidden;
+    transition: border-color 0.3s;
+  }
+  .chart-card:hover { border-color: rgba(91,141,239,0.25); }
+  .chart-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(91,141,239,0.15), transparent);
+  }
+  .chart-card h3 {
+    font-size: 14px; margin-bottom: 16px; color: var(--text-dim);
+    display: flex; align-items: center; gap: 8px; font-weight: 600;
+  }
+  .chart-card h3 span { color: var(--text-bright); }
+  .chart-container { width: 100%; height: 360px; }
+  .chart-container.tall { height: 420px; }
+  .chart-span-2 { grid-column: span 2; }
+
+  /* ===== BELT SECTION ===== */
+  .belt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(520px, 1fr)); gap: 20px; }
+  .belt-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 28px; position: relative; overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+  }
+  .belt-card::after {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    opacity: 0; transition: opacity 0.35s;
+  }
+  .belt-card:hover { border-color: rgba(91,141,239,0.25); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+  .belt-card:hover::after { opacity: 1; }
+  .belt-card .belt-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .belt-card .belt-name { font-size: 20px; font-weight: 800; }
+  .belt-card .belt-count {
+    font-size: 26px; font-weight: 800; padding: 5px 18px; border-radius: var(--radius-sm);
+  }
+  .belt-card .belt-provinces { font-size: 12px; color: var(--text-dim); margin-top: 5px; }
+  .belt-card .belt-desc { font-size: 11px; color: var(--text-dim); margin-top: 3px; font-style: italic; opacity: 0.7; }
+  .belt-data { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
+  .belt-data-item {
+    background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); padding: 14px 16px;
+    border: 1px solid rgba(255,255,255,0.025); text-align: center;
+  }
+  .belt-data-item .di-label { font-size: 10px; color: var(--text-dim); margin-bottom: 6px; letter-spacing: 0.5px; }
+  .belt-data-item .di-value { font-size: 16px; font-weight: 700; }
+  .scale-bars { margin-top: 14px; }
+  .scale-bar-row { display: flex; align-items: center; margin-bottom: 7px; }
+  .scale-bar-label { width: 80px; font-size: 11px; color: var(--text-dim); text-align: right; padding-right: 12px; flex-shrink: 0; }
+  .scale-bar-track { flex: 1; height: 22px; background: rgba(255,255,255,0.025); border-radius: 6px; overflow: hidden; }
+  .scale-bar-fill {
+    height: 100%; border-radius: 6px; transition: width 1.4s cubic-bezier(0.4,0,0.2,1);
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 8px; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.9); min-width: 36px;
+  }
+  .scale-bar-num { width: 50px; font-size: 11px; color: var(--text-dim); text-align: right; padding-left: 8px; flex-shrink: 0; }
+  .type-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .type-pill { font-size: 11px; padding: 5px 14px; border-radius: 20px; font-weight: 600; transition: transform 0.2s; }
+  .type-pill:hover { transform: scale(1.05); }
+  .top-cities { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .city-tag {
+    font-size: 11px; padding: 4px 12px; border-radius: 6px;
+    background: rgba(91,141,239,0.06); color: var(--accent); border: 1px solid rgba(91,141,239,0.12);
+    transition: all 0.2s;
+  }
+  .city-tag:hover { background: rgba(91,141,239,0.14); }
+  .sub-title { font-size: 12px; font-weight: 700; color: var(--text-dim); letter-spacing: 0.5px; margin-top: 18px; margin-bottom: 8px; }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    text-align: center; padding: 32px; font-size: 11px; color: #4a5578;
+    border-top: 1px solid rgba(28,36,96,0.5); margin-top: 48px;
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(91,141,239,0.18); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(91,141,239,0.3); }
+
+  /* ===== RESPONSIVE ===== */
   @media (max-width: 1200px) {
-    .kpi-row { grid-template-columns: repeat(3, 1fr); }
-    .charts-row { grid-template-columns: 1fr; }
+    .kpi-strip { grid-template-columns: repeat(3, 1fr); }
+    .charts-grid-top { grid-template-columns: 1fr 1fr; }
+    .charts-grid-top .chart-span-2 { grid-column: span 2; }
     .belt-grid { grid-template-columns: 1fr; }
+    .hero-inner, .main { padding-left: 28px; padding-right: 28px; }
+    .nav-tabs { padding: 0 28px; }
   }
   @media (max-width: 768px) {
-    .kpi-row { grid-template-columns: repeat(2, 1fr); }
-    .header { padding: 16px 20px; }
-    .main { padding: 16px 20px; }
+    .kpi-strip { grid-template-columns: repeat(2, 1fr); }
+    .charts-grid-top { grid-template-columns: 1fr; }
+    .charts-grid-top .chart-span-2 { grid-column: span 1; }
+    .charts-grid-bot { grid-template-columns: 1fr; }
+    .hero-top { flex-direction: column; gap: 12px; }
+    .hero-inner, .main { padding-left: 20px; padding-right: 20px; }
+    .nav-tabs { padding: 0 20px; overflow-x: auto; }
+    .belt-data { grid-template-columns: 1fr 1fr; }
+    .search-hero { padding: 24px; }
   }
+
+  @keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .belt-card { animation: fadeInUp 0.5s ease backwards; }
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-inner">
-    <div>
-      <h1>&#x1f30f; 第137届中国进出口商品交易会</h1>
-      <div class="subtitle">Canton Fair 2025 Spring | 产业带供应商看板 V2 | 数据更新: 2026-04-11 17:57</div>
+<!-- ===== HERO ===== -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-top">
+      <div>
+        <h1>Jerome供应商产业带汇总</h1>
+        <div class="subtitle">
+          <span class="live-dot"></span>
+          产业带供应商数据看板 | 54,022 家供应商 | 7 大产业带 | 62 省份/地区
+        </div>
+      </div>
+      <div class="hero-date">数据更新: 2026-04-11</div>
     </div>
-    <div class="header-stats">
-      <div class="header-stat"><div class="num">54,022</div><div class="label">参展供应商</div></div>
-      <div class="header-stat"><div class="num">62</div><div class="label">省份/地区</div></div>
-      <div class="header-stat"><div class="num">98.4%</div><div class="label">产品信息覆盖</div></div>
-      <div class="header-stat"><div class="num">7</div><div class="label">产业带</div></div>
+  </div>
+  <div class="kpi-strip">
+    <div class="kpi-item">
+      <div class="kv">26,050</div>
+      <div class="kl">生产企业</div>
+      <div class="kbar"><div class="kbar-fill" style="width:48.2%;background:linear-gradient(90deg,#5b8def,#7aadff)"></div></div>
+    </div>
+    <div class="kpi-item">
+      <div class="kv purple">18,550</div>
+      <div class="kl">外贸企业</div>
+      <div class="kbar"><div class="kbar-fill" style="width:34.3%;background:linear-gradient(90deg,#b07aff,#c99eff)"></div></div>
+    </div>
+    <div class="kpi-item">
+      <div class="kv" style="background:linear-gradient(135deg,#36d6b6,#69e6ce);-webkit-background-clip:text">8,606</div>
+      <div class="kl">工贸企业</div>
+      <div class="kbar"><div class="kbar-fill" style="width:15.9%;background:linear-gradient(90deg,#36d6b6,#69e6ce)"></div></div>
+    </div>
+    <div class="kpi-item">
+      <div class="kv green">98.5%</div>
+      <div class="kl">邮箱覆盖率</div>
+      <div class="kbar"><div class="kbar-fill" style="width:98.5%;background:linear-gradient(90deg,#51cf66,#69db7c)"></div></div>
+    </div>
+    <div class="kpi-item">
+      <div class="kv gold">67.9%</div>
+      <div class="kl">官网覆盖率</div>
+      <div class="kbar"><div class="kbar-fill" style="width:67.9%;background:linear-gradient(90deg,#ffa94d,#ffd43b)"></div></div>
+    </div>
+    <div class="kpi-item">
+      <div class="kv red">98.4%</div>
+      <div class="kl">产品信息覆盖</div>
+      <div class="kbar"><div class="kbar-fill" style="width:98.4%;background:linear-gradient(90deg,#ff6b6b,#ffa8a8)"></div></div>
     </div>
   </div>
 </div>
 
-<div class="kpi-row">
-  <div class="kpi-card">
-    <div class="kpi-icon">&#x1f3ed;</div>
-    <div class="kpi-val">26,050</div>
-    <div class="kpi-label">生产企业</div>
-    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:48.2%;background:linear-gradient(90deg,#3b82f6,#60a5fa)"></div></div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-icon">&#x1f4e6;</div>
-    <div class="kpi-val">18,550</div>
-    <div class="kpi-label">外贸企业</div>
-    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:34.3%;background:linear-gradient(90deg,#8b5cf6,#a78bfa)"></div></div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-icon">&#x1f310;</div>
-    <div class="kpi-val">8,606</div>
-    <div class="kpi-label">工贸企业</div>
-    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:15.9%;background:linear-gradient(90deg,#06b6d4,#22d3ee)"></div></div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-icon">&#x2709;</div>
-    <div class="kpi-val">98.5%</div>
-    <div class="kpi-label">邮箱覆盖率</div>
-    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:98.5%;background:linear-gradient(90deg,#10b981,#34d399)"></div></div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-icon">&#x1f517;</div>
-    <div class="kpi-val">67.9%</div>
-    <div class="kpi-label">官网覆盖率</div>
-    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:67.9%;background:linear-gradient(90deg,#f59e0b,#fbbf24)"></div></div>
-  </div>
-  <div class="kpi-card">
-    <div class="kpi-icon">&#x1f4cb;</div>
-    <div class="kpi-val">98.4%</div>
-    <div class="kpi-label">产品信息覆盖</div>
-    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:98.4%;background:linear-gradient(90deg,#ef4444,#f87171)"></div></div>
-  </div>
+<!-- ===== NAV TABS ===== -->
+<div class="nav-tabs" id="navTabs">
+  <button class="nav-tab active" data-tab="search">供应商搜索</button>
+  <button class="nav-tab" data-tab="overview">产业带分析</button>
+  <button class="nav-tab" data-tab="belts">产业带详情</button>
 </div>
 
+<!-- ===== MAIN ===== -->
 <div class="main">
 
-<div class="section-title">&#x1f50d; 供应商搜索 <span class="badge">SEARCH 54,022 SUPPLIERS</span></div>
-<div class="search-section" id="search-section">
-  <div class="search-bar">
-    <div class="search-input-wrap">
-      <span class="icon">&#x1f50d;</span>
-      <input type="text" class="search-input" id="searchInput"
-        placeholder="输入产品关键词搜索，如：LED灯、咖啡机、太阳能、瑜伽垫、陶瓷..." autocomplete="off">
-      <div class="suggest-dropdown" id="suggestDropdown"></div>
+<!-- TAB: SEARCH -->
+<div class="section active" id="sec-search">
+  <div class="search-hero" id="search-section">
+    <div class="search-bar">
+      <div class="search-input-wrap">
+        <span class="icon">&#x1f50d;</span>
+        <input type="text" class="search-input" id="searchInput"
+          placeholder="输入产品关键词搜索，如：LED灯、咖啡机、太阳能、瑜伽垫..." autocomplete="off">
+        <div class="suggest-dropdown" id="suggestDropdown"></div>
+      </div>
+      <button class="search-btn" onclick="doSearch(1)">搜索</button>
     </div>
-    <button class="search-btn" onclick="doSearch(1)">搜索供应商</button>
-  </div>
-  <div class="search-filters">
-    <select class="filter-select" id="filterProvince"><option value="">全部省份</option><option value="广东省">广东省</option><option value="浙江省">浙江省</option><option value="山东省">山东省</option><option value="江苏省">江苏省</option><option value="福建省">福建省</option><option value="河北省">河北省</option><option value="安徽省">安徽省</option><option value="浙江">浙江</option><option value="河南省">河南省</option><option value="上海市">上海市</option><option value="辽宁省">辽宁省</option><option value="江西省">江西省</option><option value="四川省">四川省</option><option value="湖北省">湖北省</option><option value="广西壮族自治区">广西壮族自治区</option><option value="湖南省">湖南省</option><option value="天津市">天津市</option><option value="陕西省">陕西省</option><option value="重庆市">重庆市</option><option value="北京市">北京市</option><option value="新疆维吾尔自治区">新疆维吾尔自治区</option><option value="黑龙江省">黑龙江省</option><option value="山西省">山西省</option><option value="广东">广东</option><option value="内蒙古自治区">内蒙古自治区</option></select>
-    <select class="filter-select" id="filterType"><option value="">全部类型</option><option value="生产企业">生产企业</option><option value="外贸企业">外贸企业</option><option value="工贸企业">工贸企业</option><option value="其他企业">其他企业</option><option value="科研院所">科研院所</option></select>
-    <select class="filter-select" id="filterScale"><option value="">全部规模</option><option value="＜50">＜50</option><option value="150~500">150~500</option><option value="50~150">50~150</option><option value="大于500">大于500</option><option value="500~1000">500~1000</option><option value="少于50人">少于50人</option></select>
-    <span style="font-size:12px;color:var(--text-dim);margin-left:8px">热门:</span>
-  </div>
-  <div class="search-tags" id="searchTags">
-    <span class="search-tag" onclick="quickSearch('LED灯')">LED灯</span>
-    <span class="search-tag" onclick="quickSearch('太阳能')">太阳能</span>
-    <span class="search-tag" onclick="quickSearch('咖啡机')">咖啡机</span>
-    <span class="search-tag" onclick="quickSearch('服装')">服装</span>
-    <span class="search-tag" onclick="quickSearch('家具')">家具</span>
-    <span class="search-tag" onclick="quickSearch('电动工具')">电动工具</span>
-    <span class="search-tag" onclick="quickSearch('陶瓷')">陶瓷</span>
-    <span class="search-tag" onclick="quickSearch('汽车配件')">汽车配件</span>
-    <span class="search-tag" onclick="quickSearch('玩具')">玩具</span>
-    <span class="search-tag" onclick="quickSearch('不锈钢')">不锈钢</span>
-    <span class="search-tag" onclick="quickSearch('瑜伽')">瑜伽</span>
-    <span class="search-tag" onclick="quickSearch('宠物')">宠物</span>
-    <span class="search-tag" onclick="quickSearch('蓝牙')">蓝牙</span>
-    <span class="search-tag" onclick="quickSearch('充电器')">充电器</span>
-    <span class="search-tag" onclick="quickSearch('手电筒')">手电筒</span>
-    <span class="search-tag" onclick="quickSearch('拖鞋')">拖鞋</span>
-    <span class="search-tag" onclick="quickSearch('餐具')">餐具</span>
-    <span class="search-tag" onclick="quickSearch('毛绒玩具')">毛绒玩具</span>
-    <span class="search-tag" onclick="quickSearch('五金')">五金</span>
-    <span class="search-tag" onclick="quickSearch('箱包')">箱包</span>
+    <div class="search-filters">
+      <select class="filter-select" id="filterProvince"><option value="">全部省份</option><option value="广东省">广东省</option><option value="浙江省">浙江省</option><option value="山东省">山东省</option><option value="江苏省">江苏省</option><option value="福建省">福建省</option><option value="河北省">河北省</option><option value="安徽省">安徽省</option><option value="浙江">浙江</option><option value="河南省">河南省</option><option value="上海市">上海市</option><option value="辽宁省">辽宁省</option><option value="江西省">江西省</option><option value="四川省">四川省</option><option value="湖北省">湖北省</option><option value="广西壮族自治区">广西壮族自治区</option><option value="湖南省">湖南省</option><option value="天津市">天津市</option><option value="陕西省">陕西省</option><option value="重庆市">重庆市</option><option value="北京市">北京市</option><option value="新疆维吾尔自治区">新疆维吾尔自治区</option><option value="黑龙江省">黑龙江省</option><option value="山西省">山西省</option><option value="广东">广东</option><option value="内蒙古自治区">内蒙古自治区</option></select>
+      <select class="filter-select" id="filterType"><option value="">全部类型</option><option value="生产企业">生产企业</option><option value="外贸企业">外贸企业</option><option value="工贸企业">工贸企业</option><option value="其他企业">其他企业</option><option value="科研院所">科研院所</option></select>
+      <select class="filter-select" id="filterScale"><option value="">全部规模</option><option value="＜50">＜50</option><option value="150~500">150~500</option><option value="50~150">50~150</option><option value="大于500">大于500</option><option value="500~1000">500~1000</option><option value="少于50人">少于50人</option></select>
+      <span style="font-size:12px;color:var(--text-dim);margin-left:8px">热门:</span>
+    </div>
+    <div class="search-tags" id="searchTags">
+      <span class="search-tag" onclick="quickSearch('LED灯')">LED灯</span>
+      <span class="search-tag" onclick="quickSearch('太阳能')">太阳能</span>
+      <span class="search-tag" onclick="quickSearch('咖啡机')">咖啡机</span>
+      <span class="search-tag" onclick="quickSearch('服装')">服装</span>
+      <span class="search-tag" onclick="quickSearch('家具')">家具</span>
+      <span class="search-tag" onclick="quickSearch('电动工具')">电动工具</span>
+      <span class="search-tag" onclick="quickSearch('陶瓷')">陶瓷</span>
+      <span class="search-tag" onclick="quickSearch('汽车配件')">汽车配件</span>
+      <span class="search-tag" onclick="quickSearch('玩具')">玩具</span>
+      <span class="search-tag" onclick="quickSearch('不锈钢')">不锈钢</span>
+      <span class="search-tag" onclick="quickSearch('瑜伽')">瑜伽</span>
+      <span class="search-tag" onclick="quickSearch('宠物')">宠物</span>
+      <span class="search-tag" onclick="quickSearch('蓝牙')">蓝牙</span>
+      <span class="search-tag" onclick="quickSearch('充电器')">充电器</span>
+      <span class="search-tag" onclick="quickSearch('手电筒')">手电筒</span>
+      <span class="search-tag" onclick="quickSearch('拖鞋')">拖鞋</span>
+      <span class="search-tag" onclick="quickSearch('餐具')">餐具</span>
+      <span class="search-tag" onclick="quickSearch('毛绒玩具')">毛绒玩具</span>
+      <span class="search-tag" onclick="quickSearch('五金')">五金</span>
+      <span class="search-tag" onclick="quickSearch('箱包')">箱包</span>
+    </div>
   </div>
   <div class="search-results" id="searchResults" style="display:none"></div>
 </div>
 
-<div class="section-title">产业带全局分析 <span class="badge">OVERVIEW</span></div>
-<div class="charts-row">
-  <div class="chart-card"><h3>&#x1f30d; 七大产业带参展商分布</h3><div class="chart-container" id="chart-belt-pie"></div></div>
-  <div class="chart-card"><h3>&#x1f4ca; 各产业带企业规模结构</h3><div class="chart-container" id="chart-belt-scale"></div></div>
-</div>
-<div class="charts-row">
-  <div class="chart-card full-chart"><h3>&#x1f5fa; 省份参展商数量排名</h3><div class="chart-container" id="chart-province-bar"></div></div>
-</div>
-<div class="charts-row">
-  <div class="chart-card"><h3>&#x1f3e2; 企业类型分布</h3><div class="chart-container" id="chart-type-pie"></div></div>
-  <div class="chart-card"><h3>&#x1f4cf; 企业规模分布</h3><div class="chart-container" id="chart-scale-pie"></div></div>
+<!-- TAB: OVERVIEW -->
+<div class="section" id="sec-overview">
+  <div class="charts-grid-top">
+    <div class="chart-card"><h3><span>七大产业带</span>供应商分布</h3><div class="chart-container" id="chart-belt-pie"></div></div>
+    <div class="chart-card"><h3><span>企业类型</span>构成分析</h3><div class="chart-container" id="chart-type-pie"></div></div>
+    <div class="chart-card"><h3><span>企业规模</span>分层结构</h3><div class="chart-container" id="chart-scale-pie"></div></div>
+  </div>
+  <div class="charts-grid-bot">
+    <div class="chart-card chart-span-2"><h3><span>省份供应商</span>数量排名 TOP 20</h3><div class="chart-container tall" id="chart-province-bar"></div></div>
+    <div class="chart-card"><h3><span>各产业带</span>企业规模结构</h3><div class="chart-container tall" id="chart-belt-scale"></div></div>
+  </div>
 </div>
 
-<div class="section-title">产业带详情 <span class="badge">7 INDUSTRIAL BELTS</span></div>
-<div class="belt-grid" id="belt-grid"></div>
+<!-- TAB: BELTS -->
+<div class="section" id="sec-belts">
+  <div class="section-head">
+    <h2>产业带详情</h2>
+    <span class="badge">7 INDUSTRIAL BELTS</span>
+  </div>
+  <div class="belt-grid" id="belt-grid"></div>
+</div>
 
 </div>
 
 <div class="footer">
-  数据来源：第137届中国进出口商品交易会官方网站 (cantonfair.org.cn) | 共采集 54,022 家参展供应商 | 数据更新: 2026-04-11 17:57 | V2 升级版
+  共采集 54,022 家供应商 | 覆盖 7 大产业带 62 个省份/地区 | Jerome供应商产业带汇总
 </div>
 
 <script>
-const belts = [{"name": "珠三角产业带", "color": "#3b82f6", "colorLight": "rgba(59,130,246,0.15)", "provinces": ["广东省"], "desc": "全球制造业核心，电子家电/五金/家居重镇", "total": 9996, "scale": {"<50人": 5018, "150~500人": 3857, "500人以上": 1121}, "types": {"生产企业": 5353, "外贸企业": 2481, "工贸企业": 2047, "其他企业": 95}, "cities": [{"name": "深圳市", "count": 2449}, {"name": "广州市", "count": 1753}, {"name": "东莞市", "count": 705}, {"name": "佛山市", "count": 680}, {"name": "汕头市", "count": 603}, {"name": "中山市", "count": 496}, {"name": "江门市", "count": 464}, {"name": "潮州市", "count": 442}, {"name": "惠州市", "count": 313}], "hasEmail": 9815, "hasWebsite": 6830, "features": "斜挎包 | 手袋 | 其他家居用品 | 西式餐具 | 其他餐厨用具 | 马克杯"}, {"name": "长三角产业带", "color": "#8b5cf6", "colorLight": "rgba(139,92,246,0.15)", "provinces": ["上海市", "江苏省", "浙江省"], "desc": "外贸第一梯队，涵盖轻工/纺织/机电全品类", "total": 17157, "scale": {"500人以上": 1489, "150~500人": 5942, "<50人": 9726}, "types": {"生产企业": 8338, "外贸企业": 6068, "工贸企业": 2614, "其他企业": 102}, "cities": [{"name": "宁波市", "count": 2220}, {"name": "杭州市", "count": 1627}, {"name": "台州市", "count": 1088}, {"name": "金华市", "count": 1087}, {"name": "温州市", "count": 993}, {"name": "苏州市", "count": 751}, {"name": "市辖区", "count": 703}, {"name": "绍兴市", "count": 595}, {"name": "湖州市", "count": 583}], "hasEmail": 16995, "hasWebsite": 12600, "features": "女装外套 | 其他家居用品 | 靠垫 | 女士衬衫 | 全涤纶面料 | 其他通用机械"}, {"name": "环渤海产业带", "color": "#06b6d4", "colorLight": "rgba(6,182,212,0.15)", "provinces": ["北京市", "天津市", "山东省", "河北省"], "desc": "重工业+外贸枢纽，涵盖农产品加工/建材/机械", "total": 8306, "scale": {"<50人": 5487, "500人以上": 608, "150~500人": 2209, "50~150人": 2}, "types": {"生产企业": 4010, "外贸企业": 3034, "工贸企业": 1175, "其他企业": 61}, "cities": [{"name": "青岛市", "count": 1310}, {"name": "临沂市", "count": 631}, {"name": "石家庄市", "count": 552}, {"name": "市辖区", "count": 485}, {"name": "潍坊市", "count": 472}, {"name": "烟台市", "count": 376}, {"name": "济南市", "count": 338}, {"name": "保定市", "count": 232}, {"name": "威海市", "count": 226}], "hasEmail": 8207, "hasWebsite": 5973, "features": "其他通用机械 | 桌布 | 台布 | 销售 | 金属网 | 靠垫"}, {"name": "海峡西岸产业带", "color": "#10b981", "colorLight": "rgba(16,185,129,0.15)", "provinces": ["福建省"], "desc": "鞋服/石材/茶叶/卫浴出口重镇", "total": 3440, "scale": {"150~500人": 1074, "<50人": 2079, "500人以上": 287}, "types": {"外贸企业": 1560, "生产企业": 1200, "工贸企业": 658, "其他企业": 22}, "cities": [{"name": "泉州市", "count": 1050}, {"name": "厦门市", "count": 907}, {"name": "福州市", "count": 683}, {"name": "漳州市", "count": 253}, {"name": "宁德市", "count": 120}, {"name": "莆田市", "count": 83}, {"name": "龙岩市", "count": 71}, {"name": "南平市", "count": 56}, {"name": "三明市", "count": 24}], "hasEmail": 3404, "hasWebsite": 2354, "features": "背包 | 旅行包 | 休闲男鞋 | 沙滩拖鞋 | 一字面拖鞋 | 跑步鞋"}, {"name": "中部崛起产业带", "color": "#f59e0b", "colorLight": "rgba(245,158,11,0.15)", "provinces": ["安徽省", "江西省", "河南省", "湖北省", "湖南省"], "desc": "承接沿海产业转移，制造业快速崛起", "total": 6187, "scale": {"<50人": 3661, "150~500人": 1968, "500人以上": 558}, "types": {"生产企业": 3183, "外贸企业": 2013, "工贸企业": 907, "其他企业": 65}, "cities": [{"name": "合肥市", "count": 534}, {"name": "郑州市", "count": 431}, {"name": "武汉市", "count": 348}, {"name": "长沙市", "count": 282}, {"name": "南昌市", "count": 245}, {"name": "赣州市", "count": 202}, {"name": "阜阳市", "count": 190}, {"name": "洛阳市", "count": 140}, {"name": "滁州市", "count": 134}], "hasEmail": 6137, "hasWebsite": 4199, "features": "其他男女装 | 销售 | 其他男装 | 旅行包 | 女装外套 | 口罩"}, {"name": "东北振兴产业带", "color": "#ef4444", "colorLight": "rgba(239,68,68,0.15)", "provinces": ["吉林省", "辽宁省", "黑龙江省"], "desc": "重工业基地，农产品/矿产/装备制造", "total": 1815, "scale": {"<50人": 1399, "150~500人": 341, "500人以上": 75}, "types": {"外贸企业": 787, "生产企业": 671, "工贸企业": 294, "其他企业": 35}, "cities": [{"name": "大连市", "count": 442}, {"name": "沈阳市", "count": 274}, {"name": "哈尔滨市", "count": 187}, {"name": "长春市", "count": 165}, {"name": "营口市", "count": 74}, {"name": "丹东市", "count": 67}, {"name": "牡丹江市", "count": 66}, {"name": "鞍山市", "count": 61}, {"name": "抚顺市", "count": 50}], "hasEmail": 1755, "hasWebsite": 983, "features": "圣诞装饰 | 其他复活节用品及装饰 | 一次性餐具 | 销售 | 人造花果 | 其他男装"}, {"name": "西部开放产业带", "color": "#ec4899", "colorLight": "rgba(236,72,153,0.15)", "provinces": ["云南省", "内蒙古自治区", "四川省", "宁夏回族自治区", "山西省", "广西壮族自治区", "新疆维吾尔自治区", "海南省", "甘肃省", "西藏自治区", "贵州省", "重庆市", "陕西省", "青海省"], "desc": "特色产业+一带一路前沿，差异化品类丰富", "total": 5624, "scale": {"<50人": 4075, "150~500人": 1142, "500人以上": 407}, "types": {"生产企业": 2424, "外贸企业": 2233, "工贸企业": 722, "其他企业": 208}, "cities": [{"name": "成都市", "count": 476}, {"name": "西安市", "count": 271}, {"name": "乌鲁木齐市", "count": 205}, {"name": "南宁市", "count": 195}, {"name": "市辖区", "count": 171}, {"name": "太原市", "count": 167}, {"name": "玉林市", "count": 137}, {"name": "海口市", "count": 132}, {"name": "昆明市", "count": 129}], "hasEmail": 5431, "hasWebsite": 2732, "features": "销售 | 批发 | 零售 | 红酒杯 | 玻璃杯 | 加工"}];
-const provData = [{"name": "广东", "val": 9668}, {"name": "浙江", "val": 9160}, {"name": "山东", "val": 5008}, {"name": "江苏", "val": 4929}, {"name": "福建", "val": 3426}, {"name": "河北", "val": 2113}, {"name": "安徽", "val": 1755}, {"name": "浙江", "val": 1543}, {"name": "河南", "val": 1473}, {"name": "上海", "val": 1389}, {"name": "辽宁", "val": 1196}, {"name": "江西", "val": 1061}, {"name": "四川", "val": 1018}, {"name": "湖北", "val": 1011}, {"name": "广西", "val": 776}, {"name": "湖南", "val": 742}, {"name": "天津", "val": 636}, {"name": "陕西", "val": 450}, {"name": "重庆", "val": 449}, {"name": "北京", "val": 413}];
-const typePieData = [{"name": "生产企业", "value": 26050}, {"name": "外贸企业", "value": 18550}, {"name": "工贸企业", "value": 8606}, {"name": "其他企业", "value": 620}, {"name": "科研院所", "value": 17}];
-const scalePieData = [{"name": "＜50", "value": 21342}, {"name": "150~500", "value": 17081}, {"name": "50~150", "value": 10892}, {"name": "大于500", "value": 4496}, {"name": "500~1000", "value": 165}, {"name": "少于50人", "value": 4}];
+// ===== TAB NAVIGATION =====
+const tabs = document.querySelectorAll('.nav-tab');
+const sections = document.querySelectorAll('.section');
+let chartsInited = false;
+
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    tabs.forEach(t => t.classList.remove('active'));
+    sections.forEach(s => s.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('sec-' + tab.dataset.tab).classList.add('active');
+    if ((tab.dataset.tab === 'overview') && !chartsInited) {
+      chartsInited = true;
+      setTimeout(initCharts, 50);
+    }
+    if (tab.dataset.tab === 'overview') {
+      setTimeout(() => allCharts.forEach(c => c && c.resize()), 100);
+    }
+  });
+});
+
+// ===== DATA =====
+const belts = [{"name":"珠三角产业带","color":"#5b8def","colorLight":"rgba(91,141,239,0.10)","provinces":["广东省"],"desc":"全球制造业核心，电子家电/五金/家居重镇","total":9996,"scale":{"<50人":5018,"150~500人":3857,"500人以上":1121},"types":{"生产企业":5353,"外贸企业":2481,"工贸企业":2047,"其他企业":95},"cities":[{"name":"深圳市","count":2449},{"name":"广州市","count":1753},{"name":"东莞市","count":705},{"name":"佛山市","count":680},{"name":"汕头市","count":603},{"name":"中山市","count":496},{"name":"江门市","count":464},{"name":"潮州市","count":442},{"name":"惠州市","count":313}],"hasEmail":9815,"hasWebsite":6830,"features":"斜挎包 | 手袋 | 其他家居用品 | 西式餐具 | 其他餐厨用具 | 马克杯"},{"name":"长三角产业带","color":"#b07aff","colorLight":"rgba(176,122,255,0.10)","provinces":["上海市","江苏省","浙江省"],"desc":"外贸第一梯队，涵盖轻工/纺织/机电全品类","total":17157,"scale":{"500人以上":1489,"150~500人":5942,"<50人":9726},"types":{"生产企业":8338,"外贸企业":6068,"工贸企业":2614,"其他企业":102},"cities":[{"name":"宁波市","count":2220},{"name":"杭州市","count":1627},{"name":"台州市","count":1088},{"name":"金华市","count":1087},{"name":"温州市","count":993},{"name":"苏州市","count":751},{"name":"市辖区","count":703},{"name":"绍兴市","count":595},{"name":"湖州市","count":583}],"hasEmail":16995,"hasWebsite":12600,"features":"女装外套 | 其他家居用品 | 靠垫 | 女士衬衫 | 全涤纶面料 | 其他通用机械"},{"name":"环渤海产业带","color":"#36d6b6","colorLight":"rgba(54,214,182,0.10)","provinces":["北京市","天津市","山东省","河北省"],"desc":"重工业+外贸枢纽，涵盖农产品加工/建材/机械","total":8306,"scale":{"<50人":5487,"500人以上":608,"150~500人":2209,"50~150人":2},"types":{"生产企业":4010,"外贸企业":3034,"工贸企业":1175,"其他企业":61},"cities":[{"name":"青岛市","count":1310},{"name":"临沂市","count":631},{"name":"石家庄市","count":552},{"name":"市辖区","count":485},{"name":"潍坊市","count":472},{"name":"烟台市","count":376},{"name":"济南市","count":338},{"name":"保定市","count":232},{"name":"威海市","count":226}],"hasEmail":8207,"hasWebsite":5973,"features":"其他通用机械 | 桌布 | 台布 | 销售 | 金属网 | 靠垫"},{"name":"海峡西岸产业带","color":"#51cf66","colorLight":"rgba(81,207,102,0.10)","provinces":["福建省"],"desc":"鞋服/石材/茶叶/卫浴出口重镇","total":3440,"scale":{"150~500人":1074,"<50人":2079,"500人以上":287},"types":{"外贸企业":1560,"生产企业":1200,"工贸企业":658,"其他企业":22},"cities":[{"name":"泉州市","count":1050},{"name":"厦门市","count":907},{"name":"福州市","count":683},{"name":"漳州市","count":253},{"name":"宁德市","count":120},{"name":"莆田市","count":83},{"name":"龙岩市","count":71},{"name":"南平市","count":56},{"name":"三明市","count":24}],"hasEmail":3404,"hasWebsite":2354,"features":"背包 | 旅行包 | 休闲男鞋 | 沙滩拖鞋 | 一字面拖鞋 | 跑步鞋"},{"name":"中部崛起产业带","color":"#ffa94d","colorLight":"rgba(255,169,77,0.10)","provinces":["安徽省","江西省","河南省","湖北省","湖南省"],"desc":"承接沿海产业转移，制造业快速崛起","total":6187,"scale":{"<50人":3661,"150~500人":1968,"500人以上":558},"types":{"生产企业":3183,"外贸企业":2013,"工贸企业":907,"其他企业":65},"cities":[{"name":"合肥市","count":534},{"name":"郑州市","count":431},{"name":"武汉市","count":348},{"name":"长沙市","count":282},{"name":"南昌市","count":245},{"name":"赣州市","count":202},{"name":"阜阳市","count":190},{"name":"洛阳市","count":140},{"name":"滁州市","count":134}],"hasEmail":6137,"hasWebsite":4199,"features":"其他男女装 | 销售 | 其他男装 | 旅行包 | 女装外套 | 口罩"},{"name":"东北振兴产业带","color":"#ff6b6b","colorLight":"rgba(255,107,107,0.10)","provinces":["吉林省","辽宁省","黑龙江省"],"desc":"重工业基地，农产品/矿产/装备制造","total":1815,"scale":{"<50人":1399,"150~500人":341,"500人以上":75},"types":{"外贸企业":787,"生产企业":671,"工贸企业":294,"其他企业":35},"cities":[{"name":"大连市","count":442},{"name":"沈阳市","count":274},{"name":"哈尔滨市","count":187},{"name":"长春市","count":165},{"name":"营口市","count":74},{"name":"丹东市","count":67},{"name":"牡丹江市","count":66},{"name":"鞍山市","count":61},{"name":"抚顺市","count":50}],"hasEmail":1755,"hasWebsite":983,"features":"圣诞装饰 | 其他复活节用品及装饰 | 一次性餐具 | 销售 | 人造花果 | 其他男装"},{"name":"西部开放产业带","color":"#f06595","colorLight":"rgba(240,101,149,0.10)","provinces":["云南省","内蒙古自治区","四川省","宁夏回族自治区","山西省","广西壮族自治区","新疆维吾尔自治区","海南省","甘肃省","西藏自治区","贵州省","重庆市","陕西省","青海省"],"desc":"特色产业+一带一路前沿，差异化品类丰富","total":5624,"scale":{"<50人":4075,"150~500人":1142,"500人以上":407},"types":{"生产企业":2424,"外贸企业":2233,"工贸企业":722,"其他企业":208},"cities":[{"name":"成都市","count":476},{"name":"西安市","count":271},{"name":"乌鲁木齐市","count":205},{"name":"南宁市","count":195},{"name":"市辖区","count":171},{"name":"太原市","count":167},{"name":"玉林市","count":137},{"name":"海口市","count":132},{"name":"昆明市","count":129}],"hasEmail":5431,"hasWebsite":2732,"features":"销售 | 批发 | 零售 | 红酒杯 | 玻璃杯 | 加工"}];
+const provData = [{"name":"广东","val":9668},{"name":"浙江","val":9160},{"name":"山东","val":5008},{"name":"江苏","val":4929},{"name":"福建","val":3426},{"name":"河北","val":2113},{"name":"安徽","val":1755},{"name":"浙江","val":1543},{"name":"河南","val":1473},{"name":"上海","val":1389},{"name":"辽宁","val":1196},{"name":"江西","val":1061},{"name":"四川","val":1018},{"name":"湖北","val":1011},{"name":"广西","val":776},{"name":"湖南","val":742},{"name":"天津","val":636},{"name":"陕西","val":450},{"name":"重庆","val":449},{"name":"北京","val":413}];
+const typePieData = [{"name":"生产企业","value":26050},{"name":"外贸企业","value":18550},{"name":"工贸企业","value":8606},{"name":"其他企业","value":620},{"name":"科研院所","value":17}];
+const scalePieData = [{"name":"＜50","value":21342},{"name":"150~500","value":17081},{"name":"50~150","value":10892},{"name":"大于500","value":4496},{"name":"500~1000","value":165},{"name":"少于50人","value":4}];
 
 // ===== Belt Cards =====
 const grid = document.getElementById('belt-grid');
-const scaleColors = {"<50人":"#ef4444","50~150人":"#f59e0b","150~500人":"#3b82f6","500人以上":"#10b981"};
-const typeColors = {"生产企业":"#3b82f6","外贸企业":"#8b5cf6","工贸企业":"#06b6d4","其他":"#6b7280"};
+const scaleColors = {"<50人":"#ff6b6b","50~150人":"#ffa94d","150~500人":"#5b8def","500人以上":"#51cf66"};
+const typeColors = {"生产企业":"#5b8def","外贸企业":"#b07aff","工贸企业":"#36d6b6","其他":"#6b7db3"};
 
-belts.forEach(belt => {
+belts.forEach((belt, idx) => {
   const maxScale = Math.max(...Object.values(belt.scale));
   const scaleHTML = Object.entries(belt.scale).map(([k,v]) => `
     <div class="scale-bar-row">
@@ -378,113 +524,121 @@ belts.forEach(belt => {
       <div class="scale-bar-num">${(v/belt.total*100).toFixed(1)}%</div>
     </div>`).join('');
   const typeHTML = Object.entries(belt.types).map(([k,v]) =>
-    `<span class="type-pill" style="background:${(typeColors[k]||'#374151')+'22'};color:${typeColors[k]||'#9ca3af'};border:1px solid ${(typeColors[k]||'#374151')+'44'}">${k} ${v}</span>`
+    `<span class="type-pill" style="background:${(typeColors[k]||'#374151')+'15'};color:${typeColors[k]||'#9ca3af'};border:1px solid ${(typeColors[k]||'#374151')+'30'}">${k} ${v}</span>`
   ).join('');
   const cityHTML = belt.cities.slice(0,8).map(c => `<span class="city-tag">${c.name} ${c.count}</span>`).join('');
 
   const card = document.createElement('div');
   card.className = 'belt-card';
-  card.innerHTML = `
+  card.style.animationDelay = (0.05 + idx * 0.07) + 's';
+  card.style.setProperty('--belt-color', belt.color);
+  card.querySelector || (card.innerHTML = `
+    <style>.belt-card:nth-child(${idx+1})::after{background:linear-gradient(90deg,transparent,${belt.color},transparent)}</style>
     <div class="belt-header">
       <div>
         <div class="belt-name" style="color:${belt.color}">${belt.name}</div>
         <div class="belt-provinces">${belt.provinces.join(' / ')}</div>
         <div class="belt-desc">${belt.desc}</div>
       </div>
-      <div class="belt-count" style="background:${belt.colorLight};color:${belt.color}">${belt.total.toLocaleString()}</div>
+      <div class="belt-count" style="background:${belt.colorLight};color:${belt.color};border:1px solid ${belt.color}28">${belt.total.toLocaleString()}</div>
     </div>
     <div class="belt-data">
-      <div class="belt-data-item"><div class="di-label">邮箱覆盖率</div><div class="di-value" style="color:${belt.color}">${(belt.hasEmail/belt.total*100).toFixed(1)}%</div></div>
-      <div class="belt-data-item"><div class="di-label">官网覆盖率</div><div class="di-value" style="color:${belt.color}">${(belt.hasWebsite/belt.total*100).toFixed(1)}%</div></div>
+      <div class="belt-data-item"><div class="di-label">邮箱覆盖</div><div class="di-value" style="color:${belt.color}">${(belt.hasEmail/belt.total*100).toFixed(1)}%</div></div>
+      <div class="belt-data-item"><div class="di-label">官网覆盖</div><div class="di-value" style="color:${belt.color}">${(belt.hasWebsite/belt.total*100).toFixed(1)}%</div></div>
       <div class="belt-data-item"><div class="di-label">生产企业占比</div><div class="di-value" style="color:${belt.color}">${((belt.types['生产企业']||0)/belt.total*100).toFixed(1)}%</div></div>
-      <div class="belt-data-item"><div class="di-label">核心品类</div><div class="di-value" style="font-size:11px;font-weight:400;color:var(--text)">${belt.features}</div></div>
+      <div class="belt-data-item"><div class="di-label">核心品类</div><div class="di-value" style="font-size:10px;font-weight:400;color:var(--text)">${belt.features}</div></div>
     </div>
-    <div style="margin-top:16px;font-size:13px;font-weight:600;color:var(--text-dim)">企业规模结构</div>
+    <div class="sub-title">企业规模结构</div>
     <div class="scale-bars">${scaleHTML}</div>
-    <div style="margin-top:14px;font-size:13px;font-weight:600;color:var(--text-dim)">企业类型</div>
+    <div class="sub-title">企业类型</div>
     <div class="type-pills">${typeHTML}</div>
-    <div style="margin-top:14px;font-size:13px;font-weight:600;color:var(--text-dim)">核心城市</div>
-    <div class="top-cities">${cityHTML}</div>`;
+    <div class="sub-title">核心城市</div>
+    <div class="top-cities">${cityHTML}</div>`);
   grid.appendChild(card);
 });
 
-// ===== ECharts =====
-const eTheme = { bg:'transparent', textColor:'#94a3b8', splitLineColor:'rgba(255,255,255,0.06)' };
+// ===== ECharts (lazy init) =====
+const eTheme = { bg:'transparent', textColor:'#6b7db3', splitLineColor:'rgba(255,255,255,0.03)' };
+const tooltipStyle = { backgroundColor:'rgba(16,21,54,0.95)', borderColor:'#1c2460', textStyle:{color:'#c9d1e8'} };
+let allCharts = [];
 
-const chartBeltPie = echarts.init(document.getElementById('chart-belt-pie'));
-chartBeltPie.setOption({
-  tooltip: { trigger:'item', formatter:'{b}: {c} ({d}%)' },
-  legend: { bottom:0, textStyle:{ color:eTheme.textColor, fontSize:11 }, type:'scroll' },
-  series:[{ type:'pie', radius:['38%','68%'], center:['50%','45%'],
-    itemStyle:{ borderRadius:6, borderWidth:2, borderColor:'#111640' },
-    label:{ color:'#e2e8f0', fontSize:11, formatter:'{b}\n{d}%' },
-    data: belts.map(b => ({ name:b.name, value:b.total, itemStyle:{ color:b.color } }))
-  }]
-});
+function initCharts() {
+  const chartBeltPie = echarts.init(document.getElementById('chart-belt-pie'));
+  chartBeltPie.setOption({
+    tooltip: { trigger:'item', formatter:'{b}: {c} ({d}%)', ...tooltipStyle },
+    legend: { bottom:0, textStyle:{ color:eTheme.textColor, fontSize:11 }, type:'scroll' },
+    series:[{ type:'pie', radius:['42%','72%'], center:['50%','44%'],
+      itemStyle:{ borderRadius:8, borderWidth:3, borderColor:'#101536' },
+      label:{ color:'#c9d1e8', fontSize:11, formatter:'{b}\n{d}%' },
+      emphasis:{ itemStyle:{ shadowBlur:24, shadowColor:'rgba(0,0,0,0.5)' } },
+      data: belts.map(b => ({ name:b.name, value:b.total, itemStyle:{ color:b.color } }))
+    }]
+  });
 
-const chartBeltScale = echarts.init(document.getElementById('chart-belt-scale'));
-const scaleKeys = ["<50人","50~150人","150~500人","500人以上"];
-chartBeltScale.setOption({
-  tooltip: { trigger:'axis', axisPointer:{ type:'shadow' } },
-  legend: { bottom:0, textStyle:{ color:eTheme.textColor, fontSize:11 } },
-  grid: { left:110, right:20, top:10, bottom:50 },
-  xAxis: { type:'value', axisLabel:{ color:eTheme.textColor }, splitLine:{ lineStyle:{ color:eTheme.splitLineColor } } },
-  yAxis: { type:'category', data:belts.map(b=>b.name).reverse(), axisLabel:{ color:eTheme.textColor, fontSize:11 } },
-  series: scaleKeys.map(k => ({
-    name:k, type:'bar', stack:'total', barWidth:22,
-    itemStyle:{ color:scaleColors[k] },
-    data: belts.map(b => b.scale[k]||0).reverse()
-  }))
-});
+  const chartTypePie = echarts.init(document.getElementById('chart-type-pie'));
+  const tpColors = ['#5b8def','#b07aff','#36d6b6','#ffa94d','#6b7db3'];
+  chartTypePie.setOption({
+    tooltip: { trigger:'item', formatter:'{b}: {c} ({d}%)', ...tooltipStyle },
+    legend: { bottom:0, textStyle:{ color:eTheme.textColor, fontSize:11 } },
+    series:[{ type:'pie', radius:['42%','72%'], center:['50%','44%'],
+      itemStyle:{ borderRadius:6, borderWidth:3, borderColor:'#101536' },
+      label:{ color:'#c9d1e8', fontSize:11, formatter:'{b}\n{d}%' },
+      emphasis:{ itemStyle:{ shadowBlur:24, shadowColor:'rgba(0,0,0,0.5)' } },
+      data: typePieData.map((d,i) => ({ ...d, itemStyle:{ color:tpColors[i]||'#6b7db3' } }))
+    }]
+  });
 
-const chartProvBar = echarts.init(document.getElementById('chart-province-bar'));
-chartProvBar.setOption({
-  tooltip: { trigger:'axis' },
-  grid: { left:60, right:30, top:10, bottom:30 },
-  xAxis: { type:'category', data:provData.map(p=>p.name), axisLabel:{ color:eTheme.textColor, fontSize:11 } },
-  yAxis: { type:'value', axisLabel:{ color:eTheme.textColor }, splitLine:{ lineStyle:{ color:eTheme.splitLineColor } } },
-  series:[{ type:'bar', barWidth:28,
-    data: provData.map((p,i) => ({
-      value:p.val,
-      itemStyle:{ color: new echarts.graphic.LinearGradient(0,0,0,1,[
-        {offset:0, color: i<5?'#3b82f6':'#6366f1'},
-        {offset:1, color: i<5?'#1e40af':'#312e81'}
-      ]), borderRadius:[4,4,0,0] }
-    })),
-    label:{ show:true, position:'top', color:'#94a3b8', fontSize:10, formatter:'{c}' }
-  }]
-});
+  const chartScalePie = echarts.init(document.getElementById('chart-scale-pie'));
+  const spColors = ['#ff6b6b','#ffa94d','#5b8def','#51cf66','#36d6b6','#b07aff','#6b7db3'];
+  chartScalePie.setOption({
+    tooltip: { trigger:'item', formatter:'{b}: {c} ({d}%)', ...tooltipStyle },
+    legend: { bottom:0, textStyle:{ color:eTheme.textColor, fontSize:11 } },
+    series:[{ type:'pie', radius:['42%','72%'], center:['50%','44%'], roseType:'area',
+      itemStyle:{ borderRadius:8, borderWidth:3, borderColor:'#101536' },
+      label:{ color:'#c9d1e8', fontSize:11, formatter:'{b}\n{d}%' },
+      emphasis:{ itemStyle:{ shadowBlur:24, shadowColor:'rgba(0,0,0,0.5)' } },
+      data: scalePieData.map((d,i) => ({ ...d, itemStyle:{ color:spColors[i]||'#6b7db3' } }))
+    }]
+  });
 
-const chartTypePie = echarts.init(document.getElementById('chart-type-pie'));
-const tpColors = ['#3b82f6','#8b5cf6','#06b6d4','#f59e0b','#6b7280'];
-chartTypePie.setOption({
-  tooltip: { trigger:'item', formatter:'{b}: {c} ({d}%)' },
-  legend: { bottom:0, textStyle:{ color:eTheme.textColor, fontSize:11 } },
-  series:[{ type:'pie', radius:['35%','65%'], center:['50%','44%'],
-    itemStyle:{ borderRadius:5, borderWidth:2, borderColor:'#111640' },
-    label:{ color:'#e2e8f0', fontSize:11, formatter:'{b}\n{d}%' },
-    data: typePieData.map((d,i) => ({ ...d, itemStyle:{ color:tpColors[i]||'#6b7280' } }))
-  }]
-});
+  const chartProvBar = echarts.init(document.getElementById('chart-province-bar'));
+  chartProvBar.setOption({
+    tooltip: { trigger:'axis', ...tooltipStyle },
+    grid: { left:60, right:30, top:20, bottom:36 },
+    xAxis: { type:'category', data:provData.map(p=>p.name), axisLabel:{ color:eTheme.textColor, fontSize:11 }, axisTick:{show:false}, axisLine:{lineStyle:{color:'rgba(255,255,255,0.06)'}} },
+    yAxis: { type:'value', axisLabel:{ color:eTheme.textColor }, splitLine:{ lineStyle:{ color:eTheme.splitLineColor } } },
+    series:[{ type:'bar', barWidth:28,
+      data: provData.map((p,i) => ({
+        value:p.val,
+        itemStyle:{ color: new echarts.graphic.LinearGradient(0,0,0,1,[
+          {offset:0, color: i<3?'#5b8def': i<7?'#b07aff':'#36d6b6'},
+          {offset:1, color: i<3?'#2a52a0': i<7?'#6a3db3':'#1a7a66'}
+        ]), borderRadius:[5,5,0,0] }
+      })),
+      label:{ show:true, position:'top', color:'#6b7db3', fontSize:10, formatter:'{c}' }
+    }]
+  });
 
-const chartScalePie = echarts.init(document.getElementById('chart-scale-pie'));
-const spColors = ['#ef4444','#f59e0b','#3b82f6','#10b981','#059669','#6366f1','#6b7280'];
-chartScalePie.setOption({
-  tooltip: { trigger:'item', formatter:'{b}: {c} ({d}%)' },
-  legend: { bottom:0, textStyle:{ color:eTheme.textColor, fontSize:11 } },
-  series:[{ type:'pie', radius:['35%','65%'], center:['50%','44%'], roseType:'area',
-    itemStyle:{ borderRadius:6, borderWidth:2, borderColor:'#111640' },
-    label:{ color:'#e2e8f0', fontSize:11, formatter:'{b}\n{d}%' },
-    data: scalePieData.map((d,i) => ({ ...d, itemStyle:{ color:spColors[i]||'#6b7280' } }))
-  }]
-});
+  const chartBeltScale = echarts.init(document.getElementById('chart-belt-scale'));
+  const scaleKeys = ["<50人","50~150人","150~500人","500人以上"];
+  chartBeltScale.setOption({
+    tooltip: { trigger:'axis', axisPointer:{ type:'shadow' }, ...tooltipStyle },
+    legend: { bottom:0, textStyle:{ color:eTheme.textColor, fontSize:11 } },
+    grid: { left:110, right:20, top:20, bottom:50 },
+    xAxis: { type:'value', axisLabel:{ color:eTheme.textColor }, splitLine:{ lineStyle:{ color:eTheme.splitLineColor } } },
+    yAxis: { type:'category', data:belts.map(b=>b.name).reverse(), axisLabel:{ color:eTheme.textColor, fontSize:11 } },
+    series: scaleKeys.map(k => ({
+      name:k, type:'bar', stack:'total', barWidth:24,
+      itemStyle:{ color:scaleColors[k], borderRadius:2 },
+      data: belts.map(b => b.scale[k]||0).reverse()
+    }))
+  });
 
-window.addEventListener('resize', () => {
-  [chartBeltPie, chartBeltScale, chartProvBar, chartTypePie, chartScalePie].forEach(c => c.resize());
-});
+  allCharts = [chartBeltPie, chartTypePie, chartScalePie, chartProvBar, chartBeltScale];
+  window.addEventListener('resize', () => allCharts.forEach(c => c && c.resize()));
+}
 
 // ===== SEARCH =====
-// D = [[name,products,province,city,type,scale,contact,email,phone,website,year,attr,trade,capital,desc,tags], ...]
 let currentKeyword = '', currentPage = 1, cachedResults = [], lastFilterKey = '';
 let searchReady = false, indexBuilding = false;
 let productKeywordIndex = {}, productKeywords = [];
@@ -496,24 +650,17 @@ function buildIndex() {
   try {
     const kwMap = {};
     for (let i = 0; i < D.length; i++) {
-      // searchable string: name + products + province + city + desc + tags
       D[i][16] = (D[i][0]+' '+D[i][1]+' '+D[i][2]+' '+D[i][3]+' '+D[i][14]+' '+D[i][15]).toLowerCase();
       const products = D[i][1];
       if (products) {
         const terms = products.split(/[,，、;；\s\/|]+/).map(t=>t.trim()).filter(t=>t.length>=2);
         const seen = new Set();
-        terms.forEach(term => {
-          if (seen.has(term)) return;
-          seen.add(term);
-          if (!kwMap[term]) kwMap[term] = [];
-          kwMap[term].push(i);
-        });
+        terms.forEach(term => { if (seen.has(term)) return; seen.add(term); if (!kwMap[term]) kwMap[term]=[]; kwMap[term].push(i); });
       }
     }
     productKeywordIndex = kwMap;
     productKeywords = Object.entries(kwMap).map(([kw,arr])=>({kw,count:arr.length})).sort((a,b)=>b.count-a.count);
     searchReady = true;
-    console.log('Index built:', D.length, 'records,', productKeywords.length, 'product keywords');
   } catch(e) { console.error('Index build failed:', e); }
   finally { indexBuilding = false; }
 }
@@ -529,7 +676,6 @@ function buildIndex() {
 
 function quickSearch(kw) { document.getElementById('searchInput').value = kw; hideSuggest(); doSearch(1); }
 
-// Auto-suggest
 const searchInput = document.getElementById('searchInput');
 const suggestDropdown = document.getElementById('suggestDropdown');
 let suggestActive = -1, suggestItems = [];
@@ -540,17 +686,12 @@ searchInput.addEventListener('input', function() {
   if (!searchReady) { buildIndex(); if (!searchReady) return; }
   showSuggestions(val);
 });
-
 searchInput.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter') {
-    if (suggestActive >= 0 && suggestItems[suggestActive]) searchInput.value = suggestItems[suggestActive].kw;
-    doSearch(1); hideSuggest(); return;
-  }
+  if (e.key === 'Enter') { if (suggestActive >= 0 && suggestItems[suggestActive]) searchInput.value = suggestItems[suggestActive].kw; doSearch(1); hideSuggest(); return; }
   if (e.key === 'ArrowDown') { e.preventDefault(); suggestActive = Math.min(suggestActive+1, suggestItems.length-1); updateSuggestHighlight(); }
   else if (e.key === 'ArrowUp') { e.preventDefault(); suggestActive = Math.max(suggestActive-1, -1); updateSuggestHighlight(); }
   else if (e.key === 'Escape') hideSuggest();
 });
-
 document.addEventListener('click', function(e) { if (!e.target.closest('.search-input-wrap')) hideSuggest(); });
 
 function showSuggestions(val) {
@@ -563,24 +704,17 @@ function showSuggestions(val) {
     const highlighted = item.kw.replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>');
     html += `<div class="suggest-item" data-idx="${i}" onclick="quickSearch('${item.kw}')" onmouseenter="suggestActive=${i};updateSuggestHighlight()"><span class="kw">${highlighted}</span><span class="cnt">${item.count}家</span></div>`;
   });
-  suggestDropdown.innerHTML = html;
-  suggestDropdown.classList.add('show');
+  suggestDropdown.innerHTML = html; suggestDropdown.classList.add('show');
 }
-
 function hideSuggest() { suggestDropdown.classList.remove('show'); suggestActive=-1; suggestItems=[]; }
-function updateSuggestHighlight() {
-  suggestDropdown.querySelectorAll('.suggest-item').forEach((el,i) => el.classList.toggle('active', i===suggestActive));
-}
+function updateSuggestHighlight() { suggestDropdown.querySelectorAll('.suggest-item').forEach((el,i) => el.classList.toggle('active', i===suggestActive)); }
 
 function doSearch(page) {
   if (!searchReady) { buildIndex(); if (!searchReady) { alert('数据加载中...'); return; } }
   const keyword = document.getElementById('searchInput').value.trim();
   if (!keyword && page === 1) { document.getElementById('searchResults').style.display = 'none'; return; }
   document.getElementById('searchResults').style.display = 'block';
-  const province = document.getElementById('filterProvince').value;
-  const etype = document.getElementById('filterType').value;
-  const scale = document.getElementById('filterScale').value;
-  _execSearch(keyword, province, etype, scale, page);
+  _execSearch(keyword, document.getElementById('filterProvince').value, document.getElementById('filterType').value, document.getElementById('filterScale').value, page);
 }
 
 function _execSearch(keyword, province, etype, scale, page) {
@@ -588,7 +722,6 @@ function _execSearch(keyword, province, etype, scale, page) {
   const kws = keyword.toLowerCase().split(/\s+/).filter(Boolean);
   const pageSize = 20;
   const filterKey = keyword+'|'+province+'|'+etype+'|'+scale;
-
   if (filterKey !== lastFilterKey) {
     cachedResults = [];
     if (kws.length === 1 && productKeywordIndex[keyword]) {
@@ -610,28 +743,17 @@ function _execSearch(keyword, province, etype, scale, page) {
         cachedResults.push(i);
       }
     }
-    // Sort: has products first, then by year (newer first)
     if (kws.length > 0) {
-      cachedResults.sort((a,b) => {
-        const aP = D[a][1]?1:0, bP = D[b][1]?1:0;
-        if (bP !== aP) return bP - aP;
-        const aY = parseInt(D[a][10])||0, bY = parseInt(D[b][10])||0;
-        return bY - aY;
-      });
+      cachedResults.sort((a,b) => { const aP=D[a][1]?1:0, bP=D[b][1]?1:0; if(bP!==aP) return bP-aP; return (parseInt(D[b][10])||0)-(parseInt(D[a][10])||0); });
     }
     lastFilterKey = filterKey; currentKeyword = keyword;
   }
-
   currentPage = page;
-  const total = cachedResults.length;
-  const totalPages = Math.ceil(total/pageSize)||1;
+  const total = cachedResults.length, totalPages = Math.ceil(total/pageSize)||1;
   const start = (page-1)*pageSize;
-  const pageIndices = cachedResults.slice(start, start+pageSize);
-  const results = pageIndices.map(idx => {
+  const results = cachedResults.slice(start, start+pageSize).map(idx => {
     const r = D[idx];
-    return { name:r[0],main_products:r[1],province:r[2],city:r[3],type:r[4],scale:r[5],
-      contact:r[6],email:r[7],phone:r[8],website:r[9],year:r[10],attr:r[11],
-      trade:r[12],capital:r[13],desc:r[14],tags:r[15] };
+    return { name:r[0],main_products:r[1],province:r[2],city:r[3],type:r[4],scale:r[5],contact:r[6],email:r[7],phone:r[8],website:r[9],year:r[10],attr:r[11],trade:r[12],capital:r[13],desc:r[14],tags:r[15] };
   });
   renderResults({ total, page, page_size:pageSize, total_pages:totalPages, results }, keyword);
   resultsDiv.scrollIntoView({ behavior:'smooth', block:'start' });
@@ -640,125 +762,55 @@ function _execSearch(keyword, province, etype, scale, page) {
 function highlightText(text, keyword) {
   if (!text || !keyword) return text || '';
   let result = text;
-  keyword.toLowerCase().split(/\s+/).forEach(kw => {
-    if (!kw) return;
-    result = result.replace(new RegExp(`(${kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>');
-  });
+  keyword.toLowerCase().split(/\s+/).forEach(kw => { if(!kw) return; result = result.replace(new RegExp(`(${kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi'), '<mark>$1</mark>'); });
   return result;
 }
 
 function renderResults(data, keyword) {
   const resultsDiv = document.getElementById('searchResults');
-
   if (data.total === 0) {
     let suggestHTML = '';
     if (keyword && productKeywords.length) {
       const q = keyword.toLowerCase();
       const similar = productKeywords.filter(item => item.kw.toLowerCase().includes(q.charAt(0))||q.includes(item.kw.charAt(0))).slice(0,8);
-      if (similar.length) {
-        suggestHTML = '<div style="margin-top:16px"><span style="color:var(--text-dim);font-size:13px">试试这些关键词：</span><div class="search-tags" style="margin-top:8px;justify-content:center">' +
-          similar.map(s=>`<span class="search-tag" onclick="quickSearch('${s.kw}')">${s.kw} (${s.count})</span>`).join('') + '</div></div>';
-      }
+      if (similar.length) suggestHTML = '<div style="margin-top:20px"><span style="color:var(--text-dim);font-size:13px">试试这些关键词：</span><div class="search-tags" style="margin-top:10px;justify-content:center">'+similar.map(s=>`<span class="search-tag" onclick="quickSearch('${s.kw}')">${s.kw} (${s.count})</span>`).join('')+'</div></div>';
     }
     resultsDiv.innerHTML = `<div class="no-results"><div class="big">&#x1f50d;</div>未找到与 "${keyword}" 相关的供应商<br><small style="color:var(--text-dim)">请尝试其他关键词</small>${suggestHTML}</div>`;
     return;
   }
-
-  // Related products
   let relatedHTML = '';
   if (keyword && data.total > 0) {
     const relatedMap = {};
-    const sampleCount = Math.min(cachedResults.length, 200);
-    for (let j = 0; j < sampleCount; j++) {
-      const products = D[cachedResults[j]][1];
-      if (!products) continue;
-      products.split(/[,，、;；\s\/|]+/).forEach(t => {
-        t = t.trim();
-        if (t.length >= 2 && t !== keyword) relatedMap[t] = (relatedMap[t]||0)+1;
-      });
+    for (let j = 0; j < Math.min(cachedResults.length, 200); j++) {
+      const products = D[cachedResults[j]][1]; if (!products) continue;
+      products.split(/[,，、;；\s\/|]+/).forEach(t => { t=t.trim(); if (t.length>=2 && t!==keyword) relatedMap[t]=(relatedMap[t]||0)+1; });
     }
     const related = Object.entries(relatedMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-    if (related.length) {
-      relatedHTML = '<div style="margin-top:10px;display:flex;align-items:center;flex-wrap:wrap;gap:6px">' +
-        '<span style="font-size:11px;color:var(--text-dim)">关联产品：</span>' +
-        related.map(([kw])=>`<span class="search-tag" onclick="quickSearch('${kw}')" style="font-size:11px;padding:3px 10px">${kw}</span>`).join('') + '</div>';
-    }
+    if (related.length) relatedHTML = '<div style="margin-top:12px;display:flex;align-items:center;flex-wrap:wrap;gap:6px"><span style="font-size:11px;color:var(--text-dim)">关联产品：</span>'+related.map(([kw])=>`<span class="search-tag" onclick="quickSearch('${kw}')" style="font-size:11px;padding:3px 10px">${kw}</span>`).join('')+'</div>';
   }
-
   const tagClassMap = {'品牌企业':'tag-brand','高新技术':'tag-hightech','老字号':'tag-honored','专精特新':'tag-specialized','绿色企业':'tag-green','AEO认证':'tag-aeo','新参展':'tag-new'};
-
-  let html = `
-    <div class="results-header">
-      <div class="results-count">找到 <strong>${data.total.toLocaleString()}</strong> 家供应商${keyword ? '（关键词：'+keyword+'）' : ''}</div>
-      <div class="page-info">第 ${data.page} / ${data.total_pages} 页</div>
-    </div>
-    ${relatedHTML}
-    <div class="results-table-wrap">
-    <table class="results-table">
-      <thead><tr>
-        <th style="width:40px">#</th>
-        <th>公司名称</th>
-        <th>产品/主营</th>
-        <th>所在地</th>
-        <th>企业类型</th>
-        <th>规模</th>
-        <th>成立年份</th>
-        <th>企业标签</th>
-        <th>联系方式</th>
-      </tr></thead><tbody>`;
-
+  let html = `<div class="results-header"><div class="results-count">找到 <strong>${data.total.toLocaleString()}</strong> 家供应商${keyword?'（关键词：'+keyword+'）':''}</div><div class="page-info">第 ${data.page} / ${data.total_pages} 页</div></div>${relatedHTML}<div class="results-table-wrap"><table class="results-table"><thead><tr><th style="width:40px">#</th><th>公司名称</th><th>产品/主营</th><th>所在地</th><th>企业类型</th><th>规模</th><th>成立年份</th><th>企业标签</th><th>联系方式</th></tr></thead><tbody>`;
   data.results.forEach((ex, i) => {
     const idx = (data.page-1)*data.page_size + i + 1;
     const loc = [ex.province, ex.city].filter(Boolean).join(' ');
     const contacts = [];
-    if (ex.contact) contacts.push(`&#x1f464; ${ex.contact}`);
-    if (ex.email) contacts.push(`&#x2709; ${ex.email}`);
-    if (ex.phone) contacts.push(`&#x260e; ${ex.phone}`);
-    if (ex.website) contacts.push(`&#x1f310; ${ex.website}`);
-
+    if (ex.contact) contacts.push(`&#x1f464; ${ex.contact}`); if (ex.email) contacts.push(`&#x2709; ${ex.email}`); if (ex.phone) contacts.push(`&#x260e; ${ex.phone}`); if (ex.website) contacts.push(`&#x1f310; ${ex.website}`);
     let productsHTML = '<span style="color:#475569">-</span>';
-    if (ex.main_products) {
-      const terms = ex.main_products.split(/[,，、;；]+/).map(t=>t.trim()).filter(Boolean);
-      productsHTML = terms.map(t=>`<span class="product-tag">${highlightText(t,keyword)}</span>`).join('');
-    }
-
-    // Tags
-    let tagsHTML = '-';
-    if (ex.tags) {
-      tagsHTML = ex.tags.split(',').map(t => `<span class="tag-badge ${tagClassMap[t]||''}">${t}</span>`).join('');
-    }
-
-    // Company name with desc tooltip
+    if (ex.main_products) { const terms = ex.main_products.split(/[,，、;；]+/).map(t=>t.trim()).filter(Boolean); productsHTML = terms.map(t=>`<span class="product-tag">${highlightText(t,keyword)}</span>`).join(''); }
+    let tagsHTML = '-'; if (ex.tags) tagsHTML = ex.tags.split(',').map(t=>`<span class="tag-badge ${tagClassMap[t]||''}">${t}</span>`).join('');
     let nameHTML = highlightText(ex.name, keyword);
-    if (ex.desc) {
-      const safeDesc = ex.desc.replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-      nameHTML = `<span class="desc-tooltip" data-tip="${safeDesc}">${nameHTML}</span>`;
-    }
-
+    if (ex.desc) { const safeDesc = ex.desc.replace(/"/g,'&quot;').replace(/'/g,'&#39;'); nameHTML = `<span class="desc-tooltip" data-tip="${safeDesc}">${nameHTML}</span>`; }
     const tradeInfo = [ex.attr, ex.trade].filter(Boolean).join(' | ');
-    const typeColors = {'生产企业':'pill-prod','外贸企业':'pill-trade','工贸企业':'pill-scale'};
-
-    html += `<tr>
-      <td style="color:var(--text-dim);text-align:center">${idx}</td>
-      <td class="company-name">${nameHTML}</td>
-      <td class="products">${productsHTML}</td>
-      <td style="white-space:nowrap;font-size:12px">${loc||'-'}</td>
-      <td><span class="pill-sm ${typeColors[ex.type]||''}">${ex.type||'-'}</span>${tradeInfo?'<br><span style="font-size:10px;color:var(--text-dim)">'+tradeInfo+'</span>':''}</td>
-      <td style="white-space:nowrap;font-size:12px">${ex.scale||'-'}</td>
-      <td style="white-space:nowrap;font-size:12px;text-align:center">${ex.year&&ex.year!=='None'?ex.year:'-'}</td>
-      <td style="max-width:120px">${tagsHTML}</td>
-      <td class="contact-info">${contacts.join('<br>')||'-'}</td>
-    </tr>`;
+    const tc = {'生产企业':'pill-prod','外贸企业':'pill-trade','工贸企业':'pill-scale'};
+    html += `<tr><td style="color:var(--text-dim);text-align:center">${idx}</td><td class="company-name">${nameHTML}</td><td class="products">${productsHTML}</td><td style="white-space:nowrap;font-size:12px">${loc||'-'}</td><td><span class="pill-sm ${tc[ex.type]||''}">${ex.type||'-'}</span>${tradeInfo?'<br><span style="font-size:10px;color:var(--text-dim)">'+tradeInfo+'</span>':''}</td><td style="white-space:nowrap;font-size:12px">${ex.scale||'-'}</td><td style="white-space:nowrap;font-size:12px;text-align:center">${ex.year&&ex.year!=='None'?ex.year:'-'}</td><td style="max-width:120px">${tagsHTML}</td><td class="contact-info">${contacts.join('<br>')||'-'}</td></tr>`;
   });
-
-  html += '</tbody></table></div>';
-  html += '<div class="pagination">';
-  html += `<button class="page-btn" onclick="doSearch(1)" ${data.page<=1?'disabled':''}>&#x23EA; 首页</button>`;
-  html += `<button class="page-btn" onclick="doSearch(${data.page-1})" ${data.page<=1?'disabled':''}>&#x25C0; 上一页</button>`;
+  html += '</tbody></table></div><div class="pagination">';
+  html += `<button class="page-btn" onclick="doSearch(1)" ${data.page<=1?'disabled':''}>&#x23EA;</button>`;
+  html += `<button class="page-btn" onclick="doSearch(${data.page-1})" ${data.page<=1?'disabled':''}>&#x25C0;</button>`;
   const startP = Math.max(1, data.page-3), endP = Math.min(data.total_pages, data.page+3);
   for (let p = startP; p <= endP; p++) html += `<button class="page-btn ${p===data.page?'active':''}" onclick="doSearch(${p})">${p}</button>`;
-  html += `<button class="page-btn" onclick="doSearch(${data.page+1})" ${data.page>=data.total_pages?'disabled':''}>下一页 &#x25B6;</button>`;
-  html += `<button class="page-btn" onclick="doSearch(${data.total_pages})" ${data.page>=data.total_pages?'disabled':''}>末页 &#x23E9;</button>`;
+  html += `<button class="page-btn" onclick="doSearch(${data.page+1})" ${data.page>=data.total_pages?'disabled':''}>&#x25B6;</button>`;
+  html += `<button class="page-btn" onclick="doSearch(${data.total_pages})" ${data.page>=data.total_pages?'disabled':''}>&#x23E9;</button>`;
   html += `<span class="page-info">共 ${data.total_pages.toLocaleString()} 页</span></div>`;
   resultsDiv.innerHTML = html;
 }
