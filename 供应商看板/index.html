@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>供应商资质对比看板 · 下载</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh; color: #2c3e50; padding: 32px 16px;
+}
+.wrap { max-width: 880px; margin: 0 auto; }
+.card {
+  background: #fff; border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  overflow: hidden;
+}
+.hero {
+  background: linear-gradient(90deg, #4f46e5, #7c3aed);
+  color: #fff; padding: 44px 40px;
+}
+.hero h1 { font-size: 28px; font-weight: 700; margin-bottom: 10px; }
+.hero p { font-size: 15px; opacity: 0.92; line-height: 1.7; }
+.badges { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; }
+.badge {
+  background: rgba(255,255,255,0.2); padding: 5px 12px;
+  border-radius: 14px; font-size: 12px;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+.section { padding: 36px 40px; border-bottom: 1px solid #e8eaf2; }
+.section:last-child { border-bottom: none; }
+.section h2 { font-size: 18px; color: #1e293b; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.section h2::before { content: ""; width: 4px; height: 18px; background: #6366f1; border-radius: 2px; }
+
+.download-area {
+  display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
+  padding: 24px; border: 2px dashed #c7d2fe;
+  background: #eef2ff; border-radius: 14px;
+}
+.btn-download {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  color: #fff; padding: 16px 32px;
+  border-radius: 12px; text-decoration: none;
+  font-size: 16px; font-weight: 600;
+  box-shadow: 0 8px 20px rgba(99,102,241,0.4);
+  transition: all 0.2s;
+}
+.btn-download:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(99,102,241,0.5); }
+.btn-download .icon { font-size: 22px; }
+.dl-info { font-size: 13px; color: #475569; line-height: 1.7; }
+.dl-info strong { color: #1e293b; }
+
+ol.steps { padding-left: 4px; counter-reset: step; list-style: none; }
+ol.steps li {
+  counter-increment: step; position: relative;
+  padding: 14px 16px 14px 56px; margin-bottom: 10px;
+  background: #f8fafc; border-radius: 10px; line-height: 1.7;
+  font-size: 14px; color: #334155;
+}
+ol.steps li::before {
+  content: counter(step); position: absolute;
+  left: 14px; top: 14px; width: 30px; height: 30px;
+  background: #6366f1; color: #fff;
+  border-radius: 50%; text-align: center; line-height: 30px;
+  font-weight: 700; font-size: 14px;
+}
+ol.steps li strong { color: #1e293b; }
+ol.steps li code {
+  background: #e2e8f0; padding: 2px 6px;
+  border-radius: 4px; font-family: "Consolas", monospace;
+  font-size: 12px; color: #1e3a8a;
+}
+
+.feature-grid {
+  display: grid; gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+.feature {
+  background: #f8fafc; padding: 18px; border-radius: 10px;
+  border-left: 3px solid #6366f1;
+}
+.feature .ico { font-size: 22px; margin-bottom: 6px; }
+.feature h3 { font-size: 14px; color: #1e293b; margin-bottom: 4px; }
+.feature p { font-size: 12px; color: #64748b; line-height: 1.6; }
+
+.warn {
+  background: #fffbeb; border-left: 4px solid #f59e0b;
+  padding: 14px 18px; border-radius: 8px;
+  font-size: 13px; color: #78350f; line-height: 1.7;
+}
+.warn strong { color: #451a03; }
+
+.fields-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.fields-table th { background: #f1f5f9; padding: 10px; text-align: left; color: #334155; font-weight: 600; }
+.fields-table td { padding: 10px; border-top: 1px solid #e2e8f0; color: #475569; }
+.fields-table tr:nth-child(even) td { background: #fafbfc; }
+
+footer { text-align: center; padding: 20px; color: #fff; opacity: 0.7; font-size: 12px; }
+footer a { color: #fff; text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="hero">
+      <h1>📊 供应商资质对比看板</h1>
+      <p>基于「寻源效率表」模板 · 风鸟数据自动登录抓取 · 多供应商一键对比</p>
+      <div class="badges">
+        <span class="badge">v1.0</span>
+        <span class="badge">Windows 10/11 64位</span>
+        <span class="badge">解压即用</span>
+        <span class="badge">无需 Python</span>
+        <span class="badge">内置 Chromium</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>📥 下载分发包</h2>
+      <div class="download-area">
+        <a id="dlBtn" class="btn-download" href="https://github.com/JeromeLZW/LuckyOY/releases/download/v1.0/%E4%BE%9B%E5%BA%94%E5%95%86%E8%B5%84%E8%B4%A8%E7%9C%8B%E6%9D%BF-v1.0.zip">
+          <span class="icon">⬇️</span> 下载分发包 (v1.0)
+        </a>
+        <div class="dl-info">
+          <strong>文件大小：</strong>约 350 MB（zip）<br>
+          <strong>解压后：</strong>约 800 MB<br>
+          <strong>含：</strong>Python 运行时 + Chromium + 看板程序
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🚀 使用步骤</h2>
+      <ol class="steps">
+        <li><strong>下载</strong> 上方 zip 包（约 350MB），解压到任意位置（建议桌面或 D 盘）</li>
+        <li><strong>双击 <code>供应商看板.exe</code></strong>，会自动弹出 cmd 窗口 + 系统默认浏览器</li>
+        <li>看板右上角点 <strong>「🔐 登录风鸟」</strong>，弹出的 Chromium 登录风鸟一次（登录态自动保存）</li>
+        <li>回到看板，输入<strong>公司全称按 Enter</strong>，自动从风鸟抓取 9 项资质</li>
+        <li>多家供应商以<strong>列对比</strong>方式展示，可单元格编辑、一键导出 Excel</li>
+      </ol>
+    </div>
+
+    <div class="section">
+      <h2>📋 抓取字段</h2>
+      <table class="fields-table">
+        <thead><tr><th>字段</th><th>来源</th><th>对应模板列</th></tr></thead>
+        <tbody>
+          <tr><td>供应商名称</td><td>用户输入</td><td>A 列</td></tr>
+          <tr><td>地址</td><td>风鸟自动抓取</td><td>B 列</td></tr>
+          <tr><td>成立时间</td><td>风鸟自动抓取</td><td>C 列</td></tr>
+          <tr><td>注册资本（万）</td><td>风鸟自动抓取</td><td>D 列</td></tr>
+          <tr><td>员工人数</td><td>风鸟自动抓取</td><td>E 列</td></tr>
+          <tr><td>年销售额（万元）</td><td>风鸟自动抓取</td><td>F 列</td></tr>
+          <tr><td>主要产品</td><td>风鸟自动抓取</td><td>G 列</td></tr>
+          <tr><td>联系人</td><td>风鸟自动抓取</td><td>H 列</td></tr>
+          <tr><td>电话</td><td>风鸟自动抓取</td><td>I 列</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section">
+      <h2>✨ 核心特性</h2>
+      <div class="feature-grid">
+        <div class="feature"><div class="ico">🎯</div><h3>解压即用</h3><p>对方电脑无需 Python、无需 Chromium，零配置</p></div>
+        <div class="feature"><div class="ico">🔐</div><h3>看板内登录</h3><p>一键打开风鸟登录窗口，登录态自动保存复用</p></div>
+        <div class="feature"><div class="ico">⚡</div><h3>自动抓取</h3><p>输入公司名按 Enter，9 个字段自动填充</p></div>
+        <div class="feature"><div class="ico">📊</div><h3>多家对比</h3><p>列对比表横向比较，单元格可编辑</p></div>
+        <div class="feature"><div class="ico">📥</div><h3>导出 Excel</h3><p>一键导出 .xls，可合并到寻源效率表</p></div>
+        <div class="feature"><div class="ico">💾</div><h3>本地持久化</h3><p>数据存浏览器 localStorage，关掉再开还在</p></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>⚠️ 注意事项</h2>
+      <div class="warn">
+        <strong>首次启动：</strong>需 5-10 秒加载 Chromium，请耐心等候。<br>
+        <strong>关闭 cmd 窗口：</strong>= 停止服务，看板就用不了，需重新双击 exe。<br>
+        <strong>杀软误报：</strong>PyInstaller 打包的 .exe 偶尔被误报，加白名单即可。<br>
+        <strong>风鸟登录态：</strong>保存在 <code>fengniao_user_data/</code> 文件夹，删了就需重新登录。<br>
+        <strong>端口：</strong>占用 8765，如冲突联系开发者改端口。
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>📦 文件结构（解压后）</h2>
+      <pre style="background:#1e293b;color:#a5b4fc;padding:18px;border-radius:8px;font-size:13px;line-height:1.7;font-family:Consolas,monospace;overflow-x:auto;">
+供应商看板/
+  ├─ 供应商看板.exe          ← 双击此文件启动
+  ├─ _internal/              ← Python 运行时（不要删）
+  ├─ ms-playwright/          ← 内置 Chromium（不要删）
+  ├─ fengniao_user_data/     ← 自动生成：登录态
+  └─ README.txt              ← 简版说明</pre>
+    </div>
+  </div>
+
+  <footer>
+    供应商资质对比看板 · 仓库 <a href="https://github.com/JeromeLZW/LuckyOY">JeromeLZW/LuckyOY</a> · 由 Jerome 维护
+  </footer>
+</div>
+</body>
+</html>
