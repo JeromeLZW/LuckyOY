@@ -1,6 +1,6 @@
 # 供应商资质对比看板
 
-[➡️ **下载页**](https://jeromelzw.github.io/LuckyOY/%E4%BE%9B%E5%BA%94%E5%95%86%E7%9C%8B%E6%9D%BF/) · [📦 **直接下载分发包 (v1.0)**](https://github.com/JeromeLZW/LuckyOY/releases/download/v1.0/%E4%BE%9B%E5%BA%94%E5%95%86%E8%B5%84%E8%B4%A8%E7%9C%8B%E6%9D%BF-v1.0.zip)
+[➡️ **下载页**](https://jeromelzw.github.io/LuckyOY/%E4%BE%9B%E5%BA%94%E5%95%86%E7%9C%8B%E6%9D%BF/) · [📦 **直接下载分发包 (v1.0)**](https://github.com/JeromeLZW/LuckyOY/releases/download/v1.0/supplier-dashboard-v1.0.zip)
 
 基于「寻源效率表」模板的供应商资质对比看板，集成风鸟数据自动抓取。
 
